@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>📊 Grafana Essentials — Evaluation Test</title>
+<style>
+  :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3350;--accent:#f46800;--accent2:#ff9a3c;--text:#e8eaf0;--text2:#9da3bd;--green:#2ecc71;--blue:#3498db;--purple:#9b59b6;--red:#e74c3c;--radius:12px;}
+  [data-theme="light"]{--bg:#f4f6fb;--surface:#ffffff;--surface2:#eef0f8;--border:#d0d5e8;--text:#1a1d27;--text2:#555b7a;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  a{color:var(--accent);}
+  .auth-overlay{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;}
+  .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;max-width:380px;width:90%;}
+  .auth-card img{height:38px;margin-bottom:20px;}
+  .auth-card h2{font-size:1.2rem;font-weight:800;margin-bottom:8px;}
+  .auth-card p{color:var(--text2);font-size:0.87rem;margin-bottom:22px;}
+  .google-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:white;color:#333;border:1px solid #ddd;border-radius:8px;padding:11px 20px;font-size:0.9rem;font-weight:600;cursor:pointer;width:100%;transition:all 0.2s;}
+  .google-btn:hover{box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+  .google-btn svg{width:18px;height:18px;flex-shrink:0;}
+  .loading-overlay{position:fixed;inset:0;background:var(--bg);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+  .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:13px 26px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .header-left{display:flex;align-items:center;gap:10px;font-size:0.88rem;color:var(--text2);}
+  .header-left img{height:28px;}
+  .header-left a{color:var(--accent);font-weight:600;}
+  .header-right{display:flex;align-items:center;gap:8px;}
+  .user-chip{display:flex;align-items:center;gap:7px;font-size:0.82rem;}
+  .user-chip img{width:28px;height:28px;border-radius:50%;border:2px solid var(--accent);}
+  .btn-sm{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:7px;cursor:pointer;font-size:0.8rem;transition:all 0.2s;}
+  .btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+  .main{max-width:820px;margin:0 auto;padding:28px 22px;}
+  .intro-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;text-align:center;margin-bottom:28px;}
+  .intro-card h1{font-size:1.7rem;font-weight:800;margin-bottom:10px;}
+  .intro-card p{color:var(--text2);font-size:0.92rem;max-width:540px;margin:0 auto 18px;}
+  .info-chips{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+  .info-chip{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:0.8rem;color:var(--text2);}
+  .info-chip strong{color:var(--text);}
+  .start-btn{background:var(--accent);color:white;border:none;padding:13px 34px;border-radius:10px;font-size:0.98rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+  .start-btn:hover{background:var(--accent2);transform:translateY(-1px);}
+  .start-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+  .attempt-history{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-top:20px;text-align:left;}
+  .attempt-history h3{font-size:0.88rem;font-weight:700;margin-bottom:10px;}
+  .attempt-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:0.83rem;}
+  .attempt-row:last-child{border-bottom:none;}
+
+  .test-progress-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 22px;display:none;}
+  .test-progress-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:14px;}
+  .progress-bar-wrap{flex:1;background:var(--surface2);border-radius:99px;height:5px;}
+  .progress-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 0.3s;}
+  .timer-display{font-size:0.86rem;font-weight:700;color:var(--accent);white-space:nowrap;}
+
+  .section-hdr{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:18px;}
+  .section-hdr h2{font-size:1rem;font-weight:700;margin-bottom:3px;}
+  .section-hdr p{font-size:0.83rem;color:var(--text2);margin:0;}
+
+  .question-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px;transition:border-color 0.2s;}
+  .question-card.correct{border-color:var(--green);}
+  .question-card.incorrect{border-color:var(--red);}
+  .q-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;}
+  .q-num{background:var(--accent);color:white;font-size:0.7rem;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap;margin-top:2px;}
+  .q-type{background:rgba(155,89,182,0.15);color:var(--purple);font-size:0.66rem;font-weight:700;padding:3px 7px;border-radius:4px;white-space:nowrap;margin-top:2px;}
+  .q-text{font-size:0.93rem;font-weight:500;line-height:1.6;flex:1;}
+  .scenario-box{background:var(--surface2);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:11px 14px;margin-bottom:12px;font-size:0.83rem;color:var(--text2);line-height:1.6;}
+  .scenario-box strong{color:var(--blue);}
+  .options{display:flex;flex-direction:column;gap:7px;}
+  .option{display:flex;align-items:flex-start;gap:9px;padding:11px 13px;border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.15s;font-size:0.86rem;color:var(--text2);}
+  .option:hover{border-color:var(--accent);background:rgba(244,104,0,0.05);}
+  .option.selected{border-color:var(--accent);background:rgba(244,104,0,0.08);color:var(--text);}
+  .option.correct-ans{border-color:var(--green)!important;background:rgba(46,204,113,0.08)!important;color:var(--green)!important;}
+  .option.wrong-ans{border-color:var(--red)!important;background:rgba(231,76,60,0.08)!important;color:var(--red)!important;}
+  .option-letter{font-size:0.73rem;font-weight:700;min-width:18px;margin-top:1px;}
+  .feedback{margin-top:10px;padding:9px 13px;border-radius:7px;font-size:0.82rem;display:none;}
+  .feedback.show{display:block;}
+  .feedback.correct{background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.3);color:var(--green);}
+  .feedback.incorrect{background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.3);color:var(--red);}
+
+  .test-nav{display:flex;justify-content:space-between;align-items:center;margin-top:22px;padding-top:20px;border-top:1px solid var(--border);}
+  .nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:9px 20px;border-radius:8px;cursor:pointer;font-size:0.86rem;font-weight:600;transition:all 0.2s;}
+  .nav-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .nav-btn.primary{background:var(--accent);color:white;border-color:var(--accent);}
+  .nav-btn.primary:hover{background:var(--accent2);}
+  .nav-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+  .results-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:34px;text-align:center;margin-bottom:22px;}
+  .score-circle{width:110px;height:110px;border-radius:50%;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;font-weight:800;}
+  .score-pass{background:rgba(46,204,113,0.15);border:4px solid var(--green);color:var(--green);}
+  .score-fail{background:rgba(231,76,60,0.15);border:4px solid var(--red);color:var(--red);}
+  .result-stats{display:flex;justify-content:center;gap:36px;margin-bottom:20px;}
+  .result-stat .num{font-size:1.5rem;font-weight:800;}
+  .result-stat .lbl{font-size:0.72rem;color:var(--text2);text-transform:uppercase;}
+  .result-stat.g .num{color:var(--green);}
+  .result-stat.r .num{color:var(--red);}
+  .result-stat.b .num{color:var(--blue);}
+  .module-breakdown{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-top:20px;text-align:left;}
+  .module-breakdown h3{font-size:0.88rem;font-weight:700;margin-bottom:10px;}
+  .module-row{display:flex;align-items:center;gap:9px;margin-bottom:7px;font-size:0.83rem;}
+  .module-bar-wrap{flex:1;background:var(--border);border-radius:99px;height:5px;}
+  .module-bar-fill{height:100%;border-radius:99px;}
+  .module-bar-fill.pass{background:var(--green);}
+  .module-bar-fill.fail{background:var(--red);}
+  .action-btns{margin-top:22px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
+  .action-btn{padding:10px 22px;border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:var(--surface2);color:var(--text);}
+  .action-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .action-btn.primary{background:var(--accent);color:white;border-color:var(--accent);}
+  .action-btn.primary:hover{background:var(--accent2);}
+  .saving-msg{font-size:0.82rem;color:var(--text2);margin-top:10px;}
+</style>
+</head>
+<body>
+
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-card">
+    <img src="https://sflearningdevelopment.github.io/sf-internal-kubernetes-certification/sourcefuse-logo.png" alt="SourceFuse"/>
+    <h2>Sign In Required</h2>
+    <p>Sign in with your SourceFuse Google account to access the evaluation test.</p>
+    <button class="google-btn" id="signin-btn">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <span style="color:var(--text2);font-size:0.86rem;">Loading...</span>
+</div>
+
+<div id="app" style="display:none;">
+<header class="header">
+  <div class="header-left">
+    <img src="https://sflearningdevelopment.github.io/sf-internal-kubernetes-certification/sourcefuse-logo.png" alt="SourceFuse"/>
+    <a href="grafana-dashboard.html">← Dashboard</a> / Evaluation Test
+  </div>
+  <div class="header-right">
+    <div class="user-chip"><img id="user-avatar" src="" alt=""/><span id="user-name" style="font-size:0.82rem;"></span></div>
+    <button class="btn-sm" onclick="toggleTheme()">🌓 Theme</button>
+    <button class="btn-sm" id="signout-btn">Sign Out</button>
+  </div>
+</header>
+
+<div id="test-progress-bar" class="test-progress-bar">
+  <div class="test-progress-inner">
+    <span style="font-size:0.8rem;color:var(--text2);white-space:nowrap;" id="progress-text">Section 1 of 4</span>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+    <span class="timer-display" id="timer-display">⏱ 45:00</span>
+  </div>
+</div>
+
+<div class="main">
+  <div id="intro-screen"></div>
+  <div id="test-screen" style="display:none;"></div>
+  <div id="results-screen" style="display:none;"></div>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC-I-IOCq2fCwa471fsD5xOn6SYQSBDp7Q",
+  authDomain: "sfcertification-grafana.firebaseapp.com",
+  projectId: "sfcertification-grafana",
+  storageBucket: "sfcertification-grafana.firebasestorage.app",
+  messagingSenderId: "227322696511",
+  appId: "1:227322696511:web:12e7ced7dd3d45fa06798a"
+};
+
+const MAX_ATTEMPTS = 3;
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+let _uid = null, _user = null, _existingResults = null;
+let currentSection = 0, userAnswers = {}, testSubmitted = false;
+let timeLeft = 45*60, timerInterval = null, testStartTime = null;
+
+document.getElementById('signin-btn').onclick = async () => {
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) {}
+};
+document.getElementById('signout-btn').onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    _uid = user.uid; _user = user;
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('loading-overlay').style.display = 'flex';
+    document.getElementById('user-avatar').src = user.photoURL || '';
+    document.getElementById('user-name').textContent = user.displayName || '';
+    await loadExistingResults();
+    document.getElementById('loading-overlay').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    renderIntro();
+  } else {
+    _uid = null;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('auth-overlay').style.display = 'flex';
+  }
+});
+
+async function loadExistingResults() {
+  const snap = await getDoc(doc(db,'results',_uid));
+  _existingResults = snap.exists() ? snap.data() : null;
+}
+
+const ALL_QUESTIONS = [
+  {id:1,module:1,type:"MCQ",text:"What is Grafana's primary function?",options:["Store time-series metrics data","Visualize and analyze data from various sources","Generate and send alerts to on-call teams","Collect logs from distributed systems"],answer:1,explanation:"Grafana is primarily a visualization and analytics platform. It does NOT store data — it queries external data sources and displays the results."},
+  {id:2,module:1,type:"MCQ",text:"Which of the following does Grafana NOT store natively?",options:["Dashboard configurations","User preferences","Alert rules","Raw metric values from Prometheus"],answer:3,explanation:"Grafana does not store raw metrics. Your metric data lives in the data source (e.g., Prometheus)."},
+  {id:3,module:1,type:"MCQ",text:"What is the Explore mode in Grafana used for?",options:["Browsing the plugin catalog","Ad-hoc query investigation without modifying dashboards","Managing user permissions","Configuring data source connections"],answer:1,explanation:"Explore is a query scratchpad for ad-hoc investigation without cluttering your dashboards."},
+  {id:4,module:1,type:"MCQ",text:"Which panel type is best for displaying a single current metric value with a health indicator?",options:["Time Series","Heatmap","Stat or Gauge","Logs"],answer:2,explanation:"The Stat and Gauge panels display single values with threshold-based color coding to indicate health status."},
+  {id:5,module:1,type:"Scenario",text:"Your manager wants a quick glance view — a large number showing current CPU % colored red if above 85%. What visualization should you use?",scenario:"Your monitoring dashboard has a Time Series panel for server CPU. Your manager wants a large number showing the current CPU % colored red if above 85%.",options:["Keep Time Series with threshold colors","Switch to Stat panel with threshold set at 85","Switch to Heatmap panel","Switch to Bar Chart panel"],answer:1,explanation:"The Stat panel shows a single large value and applies threshold coloring (green/yellow/red) based on the current value."},
+  {id:6,module:1,type:"MCQ",text:"What type of variable would you create to dynamically populate a dropdown list of hosts from Prometheus?",options:["Constant","Custom","Interval","Query"],answer:3,explanation:"A Query variable runs a query against a data source to populate the dropdown dynamically."},
+  {id:7,module:1,type:"MCQ",text:"Where are folder-level dashboard permissions configured?",options:["Global settings in grafana.ini","Per-dashboard Settings","Dashboard Folders → Folder permissions","The LDAP configuration file"],answer:2,explanation:"Folder-level permissions allow granting different teams access to specific folders separately from org-level permissions."},
+  {id:8,module:1,type:"MCQ",text:"What keyboard shortcut opens the Grafana command palette?",options:["Ctrl+P","Ctrl+K","Ctrl+F","Ctrl+G"],answer:1,explanation:"Ctrl+K (Cmd+K on Mac) opens the Grafana command palette for quick navigation."},
+  {id:9,module:2,type:"MCQ",text:"Prometheus uses which data collection model?",options:["Push-based — targets push metrics to Prometheus","Pull-based — Prometheus scrapes metrics from targets","Event-driven — metrics sent on state changes only","Stream-based — continuous metric streams"],answer:1,explanation:"Prometheus is pull-based: it periodically scrapes configured targets' /metrics endpoints."},
+  {id:10,module:2,type:"MCQ",text:"Which Prometheus metric type should you use to track the total number of HTTP requests processed?",options:["Gauge","Histogram","Counter","Summary"],answer:2,explanation:"A Counter is monotonically increasing — perfect for totals like request counts. Use rate() to get meaningful rates."},
+  {id:11,module:2,type:"MCQ",text:"What PromQL function must you use with a Counter metric to calculate a meaningful rate?",options:["avg()","sum()","rate()","delta()"],answer:2,explanation:"rate() calculates the per-second average rate of increase, correctly handling counter resets on process restart."},
+  {id:12,module:2,type:"Scenario",text:"You need to show the percentage of HTTP 5xx errors over the last 5 minutes. Which PromQL query is correct?",scenario:"Your team wants a panel showing the HTTP error rate as a percentage. Metrics: http_requests_total with a 'status' label.",options:["http_requests_total{status=~'5..'} / http_requests_total * 100","sum(rate(http_requests_total{status=~'5..'}[5m])) / sum(rate(http_requests_total[5m])) * 100","count(http_requests_total{status='500'}) / count(http_requests_total) * 100","increase(http_requests_total{status=~'5..'}[5m]) * 100"],answer:1,explanation:"Use rate() for counters to get per-second rates, then divide error rate by total rate. sum() aggregates across all instances."},
+  {id:13,module:2,type:"MCQ",text:"In PromQL, what does node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes calculate?",options:["Memory used in bytes","Fraction of memory that is available","Memory used as a percentage","Total memory in gigabytes"],answer:1,explanation:"Dividing available by total gives the fraction (0 to 1) of memory available. Multiply by 100 for percentage."},
+  {id:14,module:2,type:"MCQ",text:"Which PromQL function would you use to find the 99th percentile request duration from a Histogram?",options:["quantile(0.99, metric)","histogram_quantile(0.99, rate(metric_bucket[5m]))","topk(99, metric)","avg_over_time(metric[5m])"],answer:1,explanation:"histogram_quantile() computes quantiles from Histogram bucket metrics. Apply rate() to the _bucket metric first."},
+  {id:15,module:2,type:"MCQ",text:"What is the default /metrics endpoint path that Prometheus scrapes from targets?",options:["/prometheus","/stats","/metrics","/health"],answer:2,explanation:"By convention, Prometheus scrapes the /metrics endpoint. This can be changed with metrics_path in scrape config."},
+  {id:16,module:2,type:"MCQ",text:"Which Node Exporter metric shows the total memory of a Linux system?",options:["node_memory_MemFree_bytes","node_memory_MemTotal_bytes","node_memory_Active_bytes","node_memory_Cached_bytes"],answer:1,explanation:"node_memory_MemTotal_bytes reports the total physical memory of the system."},
+  {id:17,module:2,type:"Scenario",text:"A Grafana panel query times out for a complex aggregation used by 50+ users. What is the best long-term solution?",scenario:"Dashboard panel runs: sum(rate(http_requests_total[5m])) by (job, service, endpoint). It times out with 10,000+ time series.",options:["Increase the Grafana query timeout to 5 minutes","Create a Prometheus recording rule to pre-compute the aggregation","Reduce the dashboard time range to last 1 hour","Switch to a different data source"],answer:1,explanation:"Recording rules pre-compute expensive queries in Prometheus at a defined interval, making dashboard queries instant."},
+  {id:18,module:3,type:"MCQ",text:"What is the difference between 'Pending' and 'Firing' alert states?",options:["Pending means notifications are queued; Firing means they are sent","Pending means the condition is met but the 'For' duration hasn't elapsed; Firing means both are true","Pending is for warning alerts; Firing is for critical alerts","There is no difference — they are synonyms"],answer:1,explanation:"Pending = condition met but 'For' duration not elapsed yet. Firing = condition met AND 'For' duration elapsed — notifications sent."},
+  {id:19,module:3,type:"MCQ",text:"What is the purpose of the 'For' duration in a Grafana alert rule?",options:["Sets how often the alert rule is evaluated","Sets how long between repeated notifications","Requires the condition to be true for this duration before the alert fires","Sets the maximum duration an alert can remain firing"],answer:2,explanation:"The 'For' duration prevents flapping. The condition must remain true for this duration before transitioning to Firing."},
+  {id:20,module:3,type:"MCQ",text:"What happens to an alert that doesn't match any notification policy?",options:["The alert is silently dropped","The alert is sent to all contact points","The alert falls through to the root (default) policy","An error is logged and the alert is retried"],answer:2,explanation:"The root policy acts as the catch-all default for all alerts that don't match a specific child policy."},
+  {id:21,module:3,type:"Scenario",text:"You want to automatically suppress warning alerts every Saturday and Sunday without manual intervention. Which feature should you use?",scenario:"Your team gets alert fatigue from weekend non-critical alerts. You want to suppress warnings every Saturday and Sunday automatically.",options:["Create a new Silence every Friday","Configure a Mute Timing with weekday = Saturday, Sunday","Delete and recreate alert rules every weekend","Set alert evaluation interval to 7 days"],answer:1,explanation:"Mute Timings are designed for recurring schedules. Configure weekday = Saturday, Sunday and attach to your notification policy."},
+  {id:22,module:3,type:"MCQ",text:"What is the correct way to include the current metric value in a Grafana alert annotation?",options:["{{ metric.value }}","{{ $value | printf \"%.2f\" }}","$METRIC_VALUE","{{ alert.current }}"],answer:1,explanation:"Grafana uses Go templating. $value holds the current evaluated metric value. Use printf for formatting."},
+  {id:23,module:3,type:"MCQ",text:"Which contact point type natively supports Slack webhook URLs?",options:["Email","Webhook","Slack","Microsoft Teams"],answer:2,explanation:"The Slack contact point type natively supports Slack webhook URLs with message formatting for Slack."},
+  {id:24,module:3,type:"MCQ",text:"What are the 4 Golden Signals used as the basis for good alerting?",options:["CPU, Memory, Disk, Network","Latency, Traffic, Errors, Saturation","Availability, Performance, Security, Capacity","Uptime, Response time, Error rate, Throughput"],answer:1,explanation:"The 4 Golden Signals (Google SRE book): Latency, Traffic, Errors, Saturation — the most important service health indicators."},
+  {id:25,module:4,type:"MCQ",text:"Which of the following is NOT one of the three Grafana plugin types?",options:["Panel plugin","Data source plugin","App plugin","Alert plugin"],answer:3,explanation:"The three Grafana plugin types are Panel, Data Source, and App. There is no 'Alert plugin' type."},
+  {id:26,module:4,type:"MCQ",text:"What must you do after installing a plugin using grafana-cli?",options:["Run grafana-cli plugins enable","Restart the Grafana server","Clear the browser cache","Reload plugin configuration via the API"],answer:1,explanation:"After installing via grafana-cli, Grafana must be restarted to load the new plugin."},
+  {id:27,module:4,type:"MCQ",text:"Which Grafana built-in panel replaced the older Worldmap plugin in Grafana 8+?",options:["Geographic panel","Map panel","Geomap panel","Satellite panel"],answer:2,explanation:"The Geomap panel is built into Grafana 8+ and supersedes the Worldmap plugin with more layer types."},
+  {id:28,module:4,type:"Scenario",text:"Your internal custom plugin fails to load with a 'Plugin not signed' error. How do you enable it?",scenario:"Your org built a custom Grafana panel plugin. It fails to load in production with 'Plugin not signed' error.",options:["The plugin cannot be used — unsigned plugins are blocked permanently","Set allow_loading_unsigned_plugins = <plugin-id> in grafana.ini","Upload the plugin via the Grafana marketplace","Enable developer mode to allow all unsigned plugins"],answer:1,explanation:"allow_loading_unsigned_plugins in grafana.ini allows specific unsigned plugins by their plugin ID."},
+  {id:29,module:4,type:"MCQ",text:"Which of these data sources is NOT built-in and requires a plugin installation?",options:["Prometheus","AWS CloudWatch","Datadog","PostgreSQL"],answer:2,explanation:"Datadog requires installing the Datadog data source plugin. Prometheus, CloudWatch, and PostgreSQL are built-in."},
+  {id:30,module:4,type:"Scenario",text:"After installing Grafana OnCall via grafana-cli and restarting, it doesn't appear in the sidebar. What is missing?",scenario:"After running grafana-cli plugins install grafana-oncall-app and restarting Grafana, OnCall is not visible in the sidebar.",options:["The plugin needs to be reinstalled","The plugin must be enabled via Configuration → Plugins → OnCall → Enable","A browser hard refresh is needed","Additional permissions must be granted to the admin user"],answer:1,explanation:"App plugins require two steps: install (CLI) AND enable (UI via Configuration → Plugins → Enable)."}
+];
+
+const SECTIONS_CONFIG = [
+  {title:"Section A: Grafana Fundamentals",subtitle:"Module 1 — 8 questions",questions:ALL_QUESTIONS.filter(q=>q.module===1)},
+  {title:"Section B: Prometheus Integration",subtitle:"Module 2 — 9 questions",questions:ALL_QUESTIONS.filter(q=>q.module===2)},
+  {title:"Section C: Alerting & Notifications",subtitle:"Module 3 — 7 questions",questions:ALL_QUESTIONS.filter(q=>q.module===3)},
+  {title:"Section D: Plugins & Extensions",subtitle:"Module 4 — 6 questions",questions:ALL_QUESTIONS.filter(q=>q.module===4)}
+];
+
+function renderIntro() {
+  const attempts = _existingResults?.attemptCount || 0;
+  const remaining = MAX_ATTEMPTS - attempts;
+  const history = _existingResults?.attempts || [];
+  let historyHTML = '';
+  if (history.length > 0) {
+    historyHTML = `<div class="attempt-history">
+      <h3>📋 Your Attempt History</h3>
+      ${history.map((a,i) => `
+        <div class="attempt-row">
+          <span>Attempt ${i+1} — ${new Date(a.date?.seconds ? a.date.seconds*1000 : a.date).toLocaleDateString()}</span>
+          <span style="font-weight:700;color:${a.passed?'var(--green)':'var(--red)'}">${a.score}% — ${a.passed?'✅ Passed':'❌ Not Passed'}</span>
+        </div>`).join('')}
+    </div>`;
+  }
+  const bestScore = _existingResults?.bestScore;
+  const bestPassed = _existingResults?.bestPassed;
+
+  document.getElementById('intro-screen').innerHTML = `
+    <div class="intro-card">
+      <h1>🎓 Grafana Essentials<br/>Evaluation Test</h1>
+      <p>This evaluation tests your knowledge across all 4 modules. Score <strong>70% or above</strong> to pass the Grafana Essentials SF Internal Certification.</p>
+      <div class="info-chips">
+        <div class="info-chip"><strong>30</strong> Questions</div>
+        <div class="info-chip"><strong>45 min</strong> Time limit</div>
+        <div class="info-chip"><strong>70%</strong> Pass mark</div>
+        <div class="info-chip"><strong>MCQ + Scenario</strong> Question types</div>
+        <div class="info-chip"><strong>${remaining}</strong> of ${MAX_ATTEMPTS} attempts remaining</div>
+      </div>
+      ${bestScore !== undefined ? `<p style="font-size:0.85rem;margin-bottom:16px;">Best score: <strong style="color:${bestPassed?'var(--green)':'var(--red)'}">${bestScore}% — ${bestPassed?'✅ Passed':'❌ Not Passed'}</strong></p>` : ''}
+      <button class="start-btn" ${remaining<=0?'disabled':''} onclick="startTest()">
+        ${remaining<=0 ? '🔒 No Attempts Remaining' : '🚀 Start Evaluation Test'}
+      </button>
+      ${remaining<=0 ? '<p style="color:var(--red);font-size:0.82rem;margin-top:10px;">You have used all 3 attempts. Contact L&D to request a reset.</p>' : ''}
+      ${historyHTML}
+    </div>`;
+}
+
+window.startTest = () => {
+  testStartTime = Date.now();
+  document.getElementById('intro-screen').style.display = 'none';
+  document.getElementById('test-screen').style.display = 'block';
+  document.getElementById('test-progress-bar').style.display = 'block';
+  startTimer();
+  renderSection();
+};
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    const m = Math.floor(timeLeft/60), s = timeLeft%60;
+    document.getElementById('timer-display').textContent = `⏱ ${m}:${s.toString().padStart(2,'0')}`;
+    if (timeLeft<=300) document.getElementById('timer-display').style.color='var(--red)';
+    if (timeLeft<=0) { clearInterval(timerInterval); submitTest(); }
+  }, 1000);
+}
+
+function renderSection() {
+  const sec = SECTIONS_CONFIG[currentSection];
+  const answered = Object.keys(userAnswers).length;
+  const pct = Math.round((answered/ALL_QUESTIONS.length)*100);
+  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-text').textContent = `Section ${currentSection+1} of ${SECTIONS_CONFIG.length} • ${answered}/${ALL_QUESTIONS.length} answered`;
+  const letters = ['A','B','C','D'];
+
+  let html = `<div class="section-hdr"><h2>${sec.title}</h2><p>${sec.subtitle}</p></div>`;
+  sec.questions.forEach(q => {
+    const isCorrect = userAnswers[q.id]===q.answer;
+    html += `<div class="question-card ${testSubmitted?(isCorrect?'correct':'incorrect'):''}" id="qcard-${q.id}">
+      <div class="q-header">
+        <span class="q-num">Q${q.id}</span>
+        <span class="q-type">${q.type}</span>
+        <span class="q-text">${q.text}</span>
+      </div>
+      ${q.scenario?`<div class="scenario-box"><strong>📋 Scenario:</strong> ${q.scenario}</div>`:''}
+      <div class="options">
+        ${q.options.map((opt,i)=>{
+          let cls='';
+          if(testSubmitted){
+            if(i===q.answer) cls='correct-ans';
+            else if(userAnswers[q.id]===i&&i!==q.answer) cls='wrong-ans';
+          } else if(userAnswers[q.id]===i) cls='selected';
+          return `<div class="option ${cls}" onclick="selectAnswer(${q.id},${i})" id="opt-${q.id}-${i}">
+            <span class="option-letter">${letters[i]}</span><span>${opt}</span></div>`;
+        }).join('')}
+      </div>
+      ${testSubmitted?`<div class="feedback ${isCorrect?'correct':'incorrect'} show">${isCorrect?'✅ Correct!':'❌ Incorrect.'} ${q.explanation}</div>`:''}
+    </div>`;
+  });
+
+  const isLast = currentSection===SECTIONS_CONFIG.length-1;
+  html += `<div class="test-nav">
+    <button class="nav-btn" onclick="prevSection()" ${currentSection===0?'disabled':''}>← Previous</button>
+    <span style="font-size:0.82rem;color:var(--text2);">${sec.questions.filter(q=>userAnswers[q.id]!==undefined).length}/${sec.questions.length} answered</span>
+    ${isLast
+      ? (testSubmitted
+          ? `<button class="nav-btn primary" onclick="showResults()">📊 View Results</button>`
+          : `<button class="nav-btn primary" onclick="submitTest()">🎯 Submit Test</button>`)
+      : `<button class="nav-btn primary" onclick="nextSection()">Next →</button>`}
+  </div>`;
+  document.getElementById('test-screen').innerHTML = html;
+}
+
+window.selectAnswer = (qid,idx) => {
+  if(testSubmitted) return;
+  userAnswers[qid]=idx;
+  document.querySelectorAll(`[id^="opt-${qid}-"]`).forEach(el=>el.classList.remove('selected'));
+  document.getElementById(`opt-${qid}-${idx}`).classList.add('selected');
+  const answered=Object.keys(userAnswers).length;
+  document.getElementById('progress-fill').style.width=Math.round((answered/ALL_QUESTIONS.length)*100)+'%';
+  document.getElementById('progress-text').textContent=`Section ${currentSection+1} of ${SECTIONS_CONFIG.length} • ${answered}/${ALL_QUESTIONS.length} answered`;
+};
+
+window.nextSection = () => { if(currentSection<SECTIONS_CONFIG.length-1){currentSection++;renderSection();window.scrollTo(0,0);} };
+window.prevSection = () => { if(currentSection>0){currentSection--;renderSection();window.scrollTo(0,0);} };
+
+window.submitTest = async () => {
+  clearInterval(timerInterval);
+  testSubmitted=true;
+  const timeTaken = Math.round((Date.now()-testStartTime)/1000);
+  const correct = ALL_QUESTIONS.filter(q=>userAnswers[q.id]===q.answer).length;
+  const score = Math.round((correct/ALL_QUESTIONS.length)*100);
+  const passed = score>=70;
+  const moduleBreakdown = {};
+  for(let m=1;m<=4;m++){
+    const mq=ALL_QUESTIONS.filter(q=>q.module===m);
+    const mc=mq.filter(q=>userAnswers[q.id]===q.answer).length;
+    moduleBreakdown[`m${m}`]={correct:mc,total:mq.length,pct:Math.round((mc/mq.length)*100)};
+  }
+  const attempt = {score,passed,correct,total:ALL_QUESTIONS.length,timeTaken,date:serverTimestamp()};
+  const ref=doc(db,'results',_uid);
+  const snap=await getDoc(ref);
+  const existing=snap.exists()?snap.data():null;
+  const prevAttempts=existing?.attempts||[];
+  const newCount=(existing?.attemptCount||0)+1;
+  const prevBest=existing?.bestScore||0;
+  const newBest=Math.max(prevBest,score);
+  const newBestPassed=existing?.bestPassed||passed;
+  await setDoc(ref,{
+    userId:_uid,userName:_user.displayName,userEmail:_user.email,
+    attemptCount:newCount,
+    bestScore:newBest,bestPassed:newBestPassed,
+    latestScore:score,latestPassed:passed,
+    moduleBreakdown,
+    attempts:arrayUnion(attempt),
+    updatedAt:serverTimestamp()
+  },{merge:true});
+  _existingResults={...(existing||{}),attemptCount:newCount,bestScore:newBest,bestPassed:newBestPassed,attempts:[...prevAttempts,{score,passed,date:new Date()}]};
+  renderSection();
+};
+
+window.showResults = () => {
+  document.getElementById('test-screen').style.display='none';
+  document.getElementById('test-progress-bar').style.display='none';
+  document.getElementById('results-screen').style.display='block';
+  window.scrollTo(0,0);
+  const correct=ALL_QUESTIONS.filter(q=>userAnswers[q.id]===q.answer).length;
+  const score=Math.round((correct/ALL_QUESTIONS.length)*100);
+  const passed=score>=70;
+  const remaining=MAX_ATTEMPTS-(_existingResults?.attemptCount||0);
+  let modHTML='';
+  const mnames=['Fundamentals','Prometheus','Alerting','Plugins'];
+  for(let m=1;m<=4;m++){
+    const mq=ALL_QUESTIONS.filter(q=>q.module===m);
+    const mc=mq.filter(q=>userAnswers[q.id]===q.answer).length;
+    const mpct=Math.round((mc/mq.length)*100);
+    modHTML+=`<div class="module-row">
+      <span style="width:115px;font-size:0.81rem;color:var(--text2)">M${m}: ${mnames[m-1]}</span>
+      <div class="module-bar-wrap"><div class="module-bar-fill ${mpct>=70?'pass':'fail'}" style="width:${mpct}%"></div></div>
+      <span style="width:65px;text-align:right;font-size:0.81rem;color:${mpct>=70?'var(--green)':'var(--red)'}">${mc}/${mq.length} (${mpct}%)</span>
+    </div>`;
+  }
+  document.getElementById('results-screen').innerHTML=`
+    <div class="results-card">
+      <div class="score-circle ${passed?'score-pass':'score-fail'}">${score}%</div>
+      <div style="font-size:1.25rem;font-weight:700;margin-bottom:7px;">${passed?'🎉 Congratulations! You Passed!':'❌ Not Passed — Keep Studying'}</div>
+      <div style="color:var(--text2);font-size:0.88rem;margin-bottom:20px;">${passed?'You have passed the Grafana Essentials SF Internal Certification.':'You need 70% to pass. Review the modules and try again if attempts remain.'}</div>
+      <div class="result-stats">
+        <div class="result-stat g"><div class="num">${correct}</div><div class="lbl">Correct</div></div>
+        <div class="result-stat r"><div class="num">${ALL_QUESTIONS.length-correct}</div><div class="lbl">Incorrect</div></div>
+        <div class="result-stat b"><div class="num">${ALL_QUESTIONS.length}</div><div class="lbl">Total</div></div>
+      </div>
+      <div class="module-breakdown"><h3>📊 Module Breakdown</h3>${modHTML}</div>
+      <p style="font-size:0.8rem;color:var(--text2);margin-top:14px;">${remaining>0?`${remaining} attempt(s) remaining`:'No attempts remaining. Contact L&D to request a reset.'}</p>
+      <div class="action-btns">
+        <button class="action-btn" onclick="reviewAnswers()">📋 Review Answers</button>
+        ${remaining>0&&!passed?`<button class="action-btn primary" onclick="retryTest()">🔄 Retake Test</button>`:''}
+        <a href="grafana-dashboard.html"><button class="action-btn">← Dashboard</button></a>
+      </div>
+    </div>`;
+};
+
+window.reviewAnswers = () => {
+  document.getElementById('results-screen').style.display='none';
+  document.getElementById('test-screen').style.display='block';
+  currentSection=0; renderSection();
+};
+
+window.retryTest = () => {
+  userAnswers={}; testSubmitted=false; currentSection=0;
+  timeLeft=45*60; clearInterval(timerInterval);
+  testStartTime=null;
+  document.getElementById('results-screen').style.display='none';
+  document.getElementById('test-screen').style.display='none';
+  document.getElementById('test-progress-bar').style.display='none';
+  document.getElementById('intro-screen').style.display='block';
+  document.getElementById('timer-display').textContent='⏱ 45:00';
+  document.getElementById('timer-display').style.color='var(--accent)';
+  renderIntro();
+};
+
+window.toggleTheme = () => {
+  const h=document.documentElement;
+  h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');
+};
+</script>
+</body>
+</html>
