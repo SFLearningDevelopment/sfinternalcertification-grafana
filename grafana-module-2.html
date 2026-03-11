@@ -176,7 +176,15 @@ const SECTIONS = [
   {id:1,title:"What is Prometheus?",badge:"foundation",content:`
     <h3>📘 Prometheus Overview</h3>
     <p>Prometheus is an open-source <strong>time-series monitoring and alerting toolkit</strong>. It scrapes metrics from instrumented applications and stores them in a time-series database.</p>
-    <div class="video-embed"><span style="font-size:1.4rem;">▶️</span><span><strong>Watch:</strong> Prometheus + Grafana Integration (18:45)</span></div>
+    <div class="video-embed">
+      <a href="https://grafana.com/docs/grafana/latest/getting-started/get-started-grafana-prometheus/" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;">
+        <span style="font-size:1.6rem;flex-shrink:0;">▶️</span>
+        <div>
+          <div style="font-size:0.88rem;font-weight:600;">Get Started: Grafana + Prometheus Integration</div>
+          <div style="font-size:0.75rem;color:var(--text2);margin-top:2px;">🔗 grafana.com · Official Documentation — click to watch</div>
+        </div>
+      </a>
+    </div>
     <ul>
       <li><strong>Pull-based:</strong> Prometheus scrapes targets (vs. push-based systems)</li>
       <li><strong>Time-series:</strong> Metrics stored as (timestamp, value) pairs with labels</li>
@@ -217,7 +225,15 @@ http_requests_total{method="GET", status="200", job="api"} 1234</pre>
   {id:4,title:"PromQL Basics",badge:"essential",content:`
     <h3>📘 What is PromQL?</h3>
     <p>PromQL (Prometheus Query Language) selects and aggregates time series data. It's the query language you write in Grafana panels when using Prometheus.</p>
-    <div class="video-embed"><span style="font-size:1.4rem;">▶️</span><span><strong>Watch:</strong> PromQL Deep Dive (22:10)</span></div>
+    <div class="video-embed">
+      <a href="https://grafana.com/blog/2020/02/04/introduction-to-promql-the-prometheus-query-language/" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;">
+        <span style="font-size:1.6rem;flex-shrink:0;">▶️</span>
+        <div>
+          <div style="font-size:0.88rem;font-weight:600;">Introduction to PromQL — The Prometheus Query Language</div>
+          <div style="font-size:0.75rem;color:var(--text2);margin-top:2px;">🔗 grafana.com · Official Blog — click to watch</div>
+        </div>
+      </a>
+    </div>
     <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># Instant vector — current value
 http_requests_total{job="api", status="200"}
 
