@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Module 2: Prometheus Integration</title>
+<style>
+  :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3350;--accent:#f46800;--accent2:#ff9a3c;--text:#e8eaf0;--text2:#9da3bd;--green:#2ecc71;--blue:#3498db;--purple:#9b59b6;--red:#e74c3c;--radius:12px;}
+  [data-theme="light"]{--bg:#f4f6fb;--surface:#ffffff;--surface2:#eef0f8;--border:#d0d5e8;--text:#1a1d27;--text2:#555b7a;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);}
+  a{color:var(--accent);}
+  .auth-overlay{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;}
+  .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;max-width:380px;width:90%;}
+  .auth-card img{height:38px;margin-bottom:20px;}
+  .auth-card h2{font-size:1.2rem;font-weight:800;margin-bottom:8px;}
+  .auth-card p{color:var(--text2);font-size:0.87rem;margin-bottom:22px;}
+  .google-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:white;color:#333;border:1px solid #ddd;border-radius:8px;padding:11px 20px;font-size:0.9rem;font-weight:600;cursor:pointer;width:100%;transition:all 0.2s;}
+  .google-btn:hover{box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+  .google-btn svg{width:18px;height:18px;flex-shrink:0;}
+  .loading-overlay{position:fixed;inset:0;background:var(--bg);z-index:500;display:none;align-items:center;justify-content:center;}
+  .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:13px 26px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .header-left{display:flex;align-items:center;gap:10px;font-size:0.88rem;color:var(--text2);}
+  .header-left img{height:28px;}
+  .header-left a{color:var(--accent);font-weight:600;}
+  .header-right{display:flex;align-items:center;gap:8px;}
+  .user-chip{display:flex;align-items:center;gap:7px;font-size:0.82rem;}
+  .user-chip img{width:28px;height:28px;border-radius:50%;border:2px solid var(--accent);}
+  .btn-sm{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:7px;cursor:pointer;font-size:0.8rem;transition:all 0.2s;}
+  .btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+  .layout{display:flex;min-height:calc(100vh - 54px);}
+  .sidebar{width:275px;background:var(--surface);border-right:1px solid var(--border);padding:18px 0;overflow-y:auto;position:sticky;top:54px;height:calc(100vh - 54px);flex-shrink:0;}
+  .sidebar-title{padding:0 18px 10px;font-size:0.73rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);border-bottom:1px solid var(--border);margin-bottom:8px;}
+  .sidebar-progress{padding:10px 18px;background:var(--surface2);margin:0 10px 10px;border-radius:8px;}
+  .sidebar-progress-bar{background:var(--border);border-radius:99px;height:4px;margin-top:5px;}
+  .sidebar-progress-fill{height:100%;border-radius:99px;background:var(--accent);transition:width 0.3s;}
+  .nav-item{padding:9px 18px;cursor:pointer;border-left:3px solid transparent;transition:all 0.15s;display:flex;align-items:center;gap:9px;font-size:0.85rem;}
+  .nav-item:hover{background:var(--surface2);}
+  .nav-item.active{border-left-color:var(--accent);background:rgba(244,104,0,0.07);color:var(--accent);font-weight:600;}
+  .nav-item.completed{color:var(--green);}
+  .nav-badge{font-size:0.63rem;padding:2px 6px;border-radius:3px;font-weight:700;}
+  .badge-foundation{background:rgba(46,204,113,0.15);color:var(--green);}
+  .badge-essential{background:rgba(52,152,219,0.15);color:var(--blue);}
+  .badge-important{background:rgba(244,104,0,0.15);color:var(--accent);}
+  .content{flex:1;padding:30px 38px;max-width:840px;}
+  .module-hero{margin-bottom:28px;}
+  .module-hero h1{font-size:1.7rem;font-weight:800;margin-bottom:7px;}
+  .module-hero p{color:var(--text2);font-size:0.97rem;}
+  .module-meta{display:flex;gap:10px;margin-top:10px;}
+  .meta-chip{font-size:0.76rem;padding:4px 10px;border-radius:6px;font-weight:600;}
+  .chip-weight{background:rgba(52,152,219,0.15);color:var(--blue);border:1px solid rgba(52,152,219,0.3);}
+  .chip-sections{background:rgba(46,204,113,0.15);color:var(--green);border:1px solid rgba(46,204,113,0.3);}
+  .section-block{margin-bottom:14px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .section-header{padding:14px 18px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--surface);user-select:none;}
+  .section-header:hover{background:var(--surface2);}
+  .section-num{font-size:0.73rem;font-weight:700;color:var(--text2);min-width:26px;}
+  .section-title{font-weight:600;font-size:0.93rem;flex:1;}
+  .section-toggle{font-size:0.78rem;color:var(--text2);transition:transform 0.2s;}
+  .section-toggle.open{transform:rotate(180deg);}
+  .section-body{padding:22px 26px;background:var(--surface);border-top:1px solid var(--border);display:none;}
+  .section-body.open{display:block;}
+  h3{font-size:0.97rem;font-weight:700;margin:18px 0 9px;}
+  h3:first-child{margin-top:0;}
+  p{font-size:0.88rem;color:var(--text2);line-height:1.7;margin-bottom:11px;}
+  strong{color:var(--text);}
+  ul,ol{padding-left:18px;margin-bottom:11px;}
+  li{font-size:0.86rem;color:var(--text2);line-height:1.7;}
+  pre{background:#0d0f18;border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-size:0.8rem;overflow-x:auto;margin:11px 0;color:#a8d8a8;font-family:'Courier New',monospace;position:relative;}
+  .copy-btn{position:absolute;top:7px;right:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:3px 9px;border-radius:4px;cursor:pointer;font-size:0.7rem;}
+  .copy-btn:hover{background:var(--accent);color:white;}
+  .callout{border-radius:8px;padding:12px 16px;margin:12px 0;font-size:0.85rem;}
+  .callout-warn{background:rgba(231,76,60,0.08);border-left:3px solid var(--red);}
+  .callout-tip{background:rgba(46,204,113,0.08);border-left:3px solid var(--green);}
+  .callout-info{background:rgba(52,152,219,0.08);border-left:3px solid var(--blue);}
+  .callout h4{font-size:0.83rem;font-weight:700;margin-bottom:5px;}
+  .analogy-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;}
+  .analogy-box h4{font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:8px;}
+  .analogy-row{display:flex;align-items:center;gap:9px;font-size:0.83rem;margin-bottom:5px;color:var(--text2);}
+  .analogy-row strong{color:var(--text);min-width:95px;}
+  .diagram{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:18px;margin:12px 0;text-align:center;}
+  .diagram-title{font-size:0.76rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
+  .diagram-row{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:7px;flex-wrap:wrap;}
+  .diagram-box{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:0.8rem;font-weight:600;}
+  .diagram-box.accent{border-color:var(--accent);color:var(--accent);}
+  .test-questions{background:rgba(244,104,0,0.06);border:1px solid rgba(244,104,0,0.2);border-radius:8px;padding:12px 16px;margin-top:16px;}
+  .test-questions h4{font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:7px;}
+  .test-questions li{font-size:0.81rem;color:var(--text2);}
+  .video-embed{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0;display:flex;align-items:center;gap:10px;font-size:0.85rem;}
+  .complete-btn{margin-top:18px;background:var(--accent);color:white;border:none;padding:9px 22px;border-radius:8px;font-size:0.86rem;font-weight:600;cursor:pointer;transition:all 0.2s;}
+  .complete-btn:hover{background:var(--accent2);}
+  .complete-btn.done{background:var(--green);cursor:default;}
+  .nav-footer{display:flex;justify-content:space-between;margin-top:28px;padding-top:22px;border-top:1px solid var(--border);}
+  .nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:9px 18px;border-radius:8px;text-decoration:none;font-size:0.86rem;font-weight:600;transition:all 0.2s;}
+  .nav-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .nav-btn.primary{background:var(--accent);color:white;border-color:var(--accent);}
+  .nav-btn.primary:hover{background:var(--accent2);}
+  .save-indicator{font-size:0.75rem;color:var(--green);margin-left:10px;opacity:0;transition:opacity 0.3s;}
+  .save-indicator.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-card">
+    <img src="https://sflearningdevelopment.github.io/sf-internal-kubernetes-certification/sourcefuse-logo.png" alt="SourceFuse"/>
+    <h2>Sign In Required</h2>
+    <p>Sign in with your SourceFuse Google account to access this module.</p>
+    <button class="google-btn" id="signin-btn">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loading-overlay"><div class="spinner"></div></div>
+
+<div id="app" style="display:none;">
+<header class="header">
+  <div class="header-left">
+    <img src="https://sflearningdevelopment.github.io/sf-internal-kubernetes-certification/sourcefuse-logo.png" alt="SourceFuse"/>
+    <a href="grafana-dashboard.html">← Dashboard</a> / Module 2
+  </div>
+  <div class="header-right">
+    <div class="user-chip"><img id="user-avatar" src="" alt=""/><span id="user-name" style="font-size:0.82rem;"></span></div>
+    <button class="btn-sm" onclick="toggleTheme()">🌓 Theme</button>
+    <button class="btn-sm" id="signout-btn">Sign Out</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-title">Module 2 — 10 Sections</div>
+    <div class="sidebar-progress">
+      <div style="font-size:0.78rem;color:var(--text2);display:flex;justify-content:space-between;"><span>Progress</span><span id="sidebar-pct">0%</span></div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="sidebar-bar" style="width:0%"></div></div>
+    </div>
+    <div id="nav-items"></div>
+  </nav>
+  <div class="content">
+    <div class="module-hero">
+      <h1>🔥 Module 2: Prometheus Integration</h1>
+      <p>Connect Grafana to Prometheus, write PromQL queries, and understand scrape configuration and service discovery.</p>
+      <div class="module-meta">
+        <span class="meta-chip chip-weight">30% Certification Weight</span>
+        <span class="meta-chip chip-sections">10 Sections</span>
+      </div>
+    </div>
+    <div id="sections-container"></div>
+    <div class="nav-footer">
+      <a href="grafana-module-1.html" class="nav-btn">← Module 1: Fundamentals</a>
+      <a href="grafana-module-3.html" class="nav-btn primary">Module 3: Alerting →</a>
+    </div>
+  </div>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC-I-IOCq2fCwa471fsD5xOn6SYQSBDp7Q",
+  authDomain: "sfcertification-grafana.firebaseapp.com",
+  projectId: "sfcertification-grafana",
+  storageBucket: "sfcertification-grafana.firebasestorage.app",
+  messagingSenderId: "227322696511",
+  appId: "1:227322696511:web:12e7ced7dd3d45fa06798a"
+};
+
+const MODULE_KEY = 'm2';
+const SECTIONS = [
+  {id:1,title:"What is Prometheus?",badge:"foundation",content:`
+    <h3>📘 Prometheus Overview</h3>
+    <p>Prometheus is an open-source <strong>time-series monitoring and alerting toolkit</strong>. It scrapes metrics from instrumented applications and stores them in a time-series database.</p>
+    <div class="video-embed"><span style="font-size:1.4rem;">▶️</span><span><strong>Watch:</strong> Prometheus + Grafana Integration (18:45)</span></div>
+    <ul>
+      <li><strong>Pull-based:</strong> Prometheus scrapes targets (vs. push-based systems)</li>
+      <li><strong>Time-series:</strong> Metrics stored as (timestamp, value) pairs with labels</li>
+      <li><strong>Multi-dimensional:</strong> Labels allow filtering and aggregation</li>
+    </ul>
+    <div class="callout callout-info"><h4>ℹ️ Prometheus + Grafana</h4><p>Prometheus <strong>stores</strong> metrics. Grafana <strong>queries and visualizes</strong> them. They are complementary — Grafana is the visualization layer, Prometheus is the storage layer.</p></div>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q1: Is Prometheus push-based or pull-based?</li><li>Q2: What is the relationship between Prometheus and Grafana?</li></ul></div>`},
+  {id:2,title:"Prometheus Data Model & Metric Types",badge:"essential",content:`
+    <h3>📘 The Prometheus Data Model</h3>
+    <p>Every metric is identified by a <strong>metric name</strong> and a set of <strong>key-value labels</strong>.</p>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># Format: metric_name{label1="value1", label2="value2"} value
+http_requests_total{method="GET", status="200", job="api"} 1234</pre>
+    <h3>📊 Four Metric Types</h3>
+    <ul>
+      <li><strong>Counter:</strong> Monotonically increasing (total requests). Use <code>rate()</code>.</li>
+      <li><strong>Gauge:</strong> Value that goes up/down (memory usage). Use as-is.</li>
+      <li><strong>Histogram:</strong> Observations in configurable buckets (request duration).</li>
+      <li><strong>Summary:</strong> Like histogram but computes quantiles client-side.</li>
+    </ul>
+    <div class="callout callout-warn"><h4>⚠️ Counter Resets</h4><p>Counters reset to 0 on process restart. Always use <code>rate()</code> — never compare raw counter values.</p></div>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q3: Which metric type would you use for tracking total HTTP requests?</li><li>Q4: What function must you use with counters to get a meaningful rate?</li></ul></div>`},
+  {id:3,title:"Adding Prometheus as Data Source",badge:"essential",content:`
+    <h3>📘 Connecting Grafana to Prometheus</h3>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># Steps:
+# 1. Configuration → Data Sources → Add data source
+# 2. Select "Prometheus"
+# 3. HTTP URL: http://prometheus-server:9090
+# 4. Scrape interval: Match your Prometheus scrape_interval (default: 15s)
+# 5. Click "Save & Test"
+# Expected: "Data source connected and labels found"</pre>
+    <h3>⚙️ Important Settings</h3>
+    <ul>
+      <li><strong>HTTP Method:</strong> GET vs POST — use POST for long queries</li>
+      <li><strong>Query timeout:</strong> Increase if complex PromQL queries time out</li>
+      <li><strong>Exemplars:</strong> Enable to link metrics to traces</li>
+    </ul>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q5: What URL format connects Grafana to a local Prometheus instance?</li><li>Q6: What should you see after a successful Prometheus data source test?</li></ul></div>`},
+  {id:4,title:"PromQL Basics",badge:"essential",content:`
+    <h3>📘 What is PromQL?</h3>
+    <p>PromQL (Prometheus Query Language) selects and aggregates time series data. It's the query language you write in Grafana panels when using Prometheus.</p>
+    <div class="video-embed"><span style="font-size:1.4rem;">▶️</span><span><strong>Watch:</strong> PromQL Deep Dive (22:10)</span></div>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># Instant vector — current value
+http_requests_total{job="api", status="200"}
+
+# Regex label filter
+http_requests_total{status=~"2.."}   # 2xx responses
+
+# Range vector (required by rate/increase)
+http_requests_total[5m]
+
+# rate() — per-second average rate of increase
+rate(http_requests_total[5m])
+
+# sum() — aggregate across labels
+sum(rate(http_requests_total[5m])) by (job)
+
+# histogram_quantile() — 99th percentile
+histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))</pre>
+    <div class="callout callout-tip"><h4>💡 rate() vs irate()</h4><p>Use <code>rate()</code> for dashboards (smoother). Use <code>irate()</code> for alerting (more sensitive to spikes).</p></div>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q7: What does rate(http_requests_total[5m]) return?</li><li>Q8: How do you filter a metric by label in PromQL?</li></ul></div>`},
+  {id:5,title:"PromQL Aggregations & Operators",badge:"essential",content:`
+    <h3>📘 Aggregation Operators</h3>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># sum() by clause — keep specified labels
+sum(rate(http_requests_total[5m])) by (status_code)
+
+# topk() — top N series
+topk(5, rate(http_requests_total[5m]))
+
+# Arithmetic operators
+node_memory_MemFree_bytes / node_memory_MemTotal_bytes * 100
+
+# Error rate
+rate(errors_total[5m]) / rate(requests_total[5m])</pre>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q9: How would you calculate the 99th percentile latency using a histogram?</li><li>Q10: What is the difference between "by" and "without" in aggregations?</li></ul></div>`},
+  {id:6,title:"Building Prometheus Panels",badge:"essential",content:`
+    <h3>📘 Panel Query Configuration</h3>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># CPU usage panel
+Query: 100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+Legend: {{instance}}
+
+# Memory usage %
+Query: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
+Legend: {{instance}} Memory
+
+# HTTP error rate
+Query: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100
+Legend: Error Rate %</pre>
+    <div class="callout callout-tip"><h4>💡 Legend Format</h4><p>Use <code>{{instance}}</code> double curly braces to reference label values in the legend for meaningful series names.</p></div>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q11: How do you display label values in a Grafana panel legend?</li></ul></div>`},
+  {id:7,title:"Prometheus Scrape Configuration",badge:"important",content:`
+    <h3>📘 How Prometheus Scrapes Metrics</h3>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># prometheus.yml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+
+  - job_name: 'app'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['app-server:8080']</pre>
+    <h3>🔍 Service Discovery</h3>
+    <ul>
+      <li><strong>Kubernetes SD:</strong> Auto-discover pods, services, nodes</li>
+      <li><strong>EC2 SD:</strong> Auto-discover AWS EC2 instances</li>
+      <li><strong>File SD:</strong> Target list from JSON/YAML file</li>
+    </ul>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q12: What is the default metrics endpoint path that Prometheus scrapes?</li><li>Q13: What is scrape_interval in Prometheus configuration?</li></ul></div>`},
+  {id:8,title:"Common Prometheus Exporters",badge:"important",content:`
+    <h3>📘 What are Exporters?</h3>
+    <p>Exporters <strong>expose metrics</strong> from third-party systems in Prometheus format.</p>
+    <ul>
+      <li><strong>Node Exporter (port 9100):</strong> Linux system metrics (CPU, memory, disk)</li>
+      <li><strong>Blackbox Exporter:</strong> Probe HTTP/TCP endpoints (uptime monitoring)</li>
+      <li><strong>MySQL / Postgres Exporter:</strong> Database metrics</li>
+      <li><strong>Redis Exporter:</strong> Redis metrics</li>
+    </ul>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># Key Node Exporter metrics:
+node_cpu_seconds_total{mode="idle"}      # CPU idle time
+node_memory_MemTotal_bytes               # Total memory
+node_memory_MemAvailable_bytes           # Available memory
+node_filesystem_avail_bytes              # Disk space available</pre>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q14: Which exporter provides Linux system metrics?</li><li>Q15: What is the default port for Node Exporter?</li></ul></div>`},
+  {id:9,title:"Grafana Explore with Prometheus",badge:"important",content:`
+    <h3>📘 Using Explore for Ad-hoc Queries</h3>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># Useful Explore queries:
+# Check which targets are up
+up
+
+# Find high CPU
+topk(10, rate(node_cpu_seconds_total{mode!="idle"}[5m]))
+
+# Recent error spike
+increase(http_requests_total{status=~"5.."}[10m])
+
+# Memory pressure
+node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes</pre>
+    <div class="callout callout-tip"><h4>💡 Query History</h4><p>Grafana Explore saves your <strong>query history</strong>. Click the clock icon next to the query field to recall recent queries.</p></div>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q16: What is the primary use case for Grafana Explore?</li></ul></div>`},
+  {id:10,title:"Prometheus Best Practices",badge:"important",content:`
+    <h3>📘 Dashboard Design for Prometheus</h3>
+    <ul>
+      <li>Use <strong>template variables</strong> for job, instance, environment</li>
+      <li>Always use <code>rate()</code> for counters, never raw values</li>
+      <li>Time window in rate() should be ~5x the scrape interval</li>
+      <li>Use <strong>recording rules</strong> for expensive queries</li>
+    </ul>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># recording_rules.yml
+groups:
+  - name: aggregations
+    rules:
+      - record: job:http_requests:rate5m
+        expr: sum(rate(http_requests_total[5m])) by (job)
+# Use in Grafana: query = job:http_requests:rate5m</pre>
+    <div class="callout callout-warn"><h4>⚠️ High Cardinality Warning</h4><p>Avoid labels with many unique values (user IDs, request IDs). High cardinality causes Prometheus memory issues.</p></div>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q17: What is a Prometheus recording rule used for?</li><li>Q18: Why should you avoid high-cardinality labels?</li></ul></div>`},
+];
+
+const BADGES={foundation:"Foundation",essential:"Essential",important:"Important"};
+const BADGE_CLASSES={foundation:"badge-foundation",essential:"badge-essential",important:"badge-important"};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+let _uid = null;
+let _completed = [];
+
+document.getElementById('signin-btn').onclick = async () => {
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) {}
+};
+document.getElementById('signout-btn').onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    _uid = user.uid;
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('loading-overlay').style.display = 'flex';
+    document.getElementById('user-avatar').src = user.photoURL || '';
+    document.getElementById('user-name').textContent = user.displayName || '';
+    await loadCompleted();
+    document.getElementById('loading-overlay').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    renderAll();
+  } else {
+    _uid = null;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('auth-overlay').style.display = 'flex';
+  }
+});
+
+async function loadCompleted() {
+  const snap = await getDoc(doc(db,'progress',_uid));
+  _completed = snap.exists() ? (snap.data()[MODULE_KEY] || []) : [];
+}
+
+async function markComplete(id) {
+  if (_completed.includes(id)) return;
+  _completed = [..._completed, id];
+  const ref = doc(db,'progress',_uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    await setDoc(ref, {[MODULE_KEY]: _completed, updatedAt: serverTimestamp()});
+  } else {
+    await updateDoc(ref, {[MODULE_KEY]: arrayUnion(id), updatedAt: serverTimestamp()});
+  }
+  const btn = document.getElementById(`complete-btn-${id}`);
+  if (btn) { btn.textContent = '✅ Completed'; btn.classList.add('done'); btn.disabled = true; }
+  renderProgress();
+  renderNavItem(id, true);
+  showSaveIndicator(id);
+}
+
+function showSaveIndicator(id) {
+  const ind = document.getElementById(`save-ind-${id}`);
+  if (ind) { ind.classList.add('show'); setTimeout(()=>ind.classList.remove('show'),2000); }
+}
+
+function renderProgress() {
+  const pct = Math.round((_completed.length / SECTIONS.length)*100);
+  document.getElementById('sidebar-pct').textContent = pct+'%';
+  document.getElementById('sidebar-bar').style.width = pct+'%';
+}
+
+function renderNavItem(id, done) {
+  const el = document.getElementById(`nav-${id}`);
+  if (!el) return;
+  el.className = 'nav-item' + (done ? ' completed' : '');
+  el.innerHTML = `<span>${id}.</span><span style="flex:1;font-size:0.83rem">${SECTIONS[id-1].title}</span><span class="nav-badge ${BADGE_CLASSES[SECTIONS[id-1].badge]}">${BADGES[SECTIONS[id-1].badge]}</span>${done?'<span style="font-size:0.72rem">✅</span>':''}`;
+  el.onclick = () => toggleSection(id);
+}
+
+function renderAll() {
+  const navContainer = document.getElementById('nav-items');
+  navContainer.innerHTML = '';
+  SECTIONS.forEach(s => {
+    const div = document.createElement('div');
+    div.id = `nav-${s.id}`;
+    navContainer.appendChild(div);
+    renderNavItem(s.id, _completed.includes(s.id));
+  });
+
+  const secContainer = document.getElementById('sections-container');
+  secContainer.innerHTML = '';
+  SECTIONS.forEach(s => {
+    const done = _completed.includes(s.id);
+    const div = document.createElement('div');
+    div.className = 'section-block';
+    div.innerHTML = `
+      <div class="section-header" onclick="toggleSection(${s.id})">
+        <span class="section-num">1.${s.id}</span>
+        <span class="section-title">${s.title}</span>
+        <span class="nav-badge ${BADGE_CLASSES[s.badge]}">${BADGES[s.badge]}</span>
+        ${done?'<span style="color:var(--green);font-size:0.83rem;">✅</span>':''}
+        <span class="section-toggle" id="toggle-${s.id}">▼</span>
+      </div>
+      <div class="section-body" id="body-${s.id}">
+        ${s.content}
+        <button class="complete-btn ${done?'done':''}" id="complete-btn-${s.id}" onclick="markComplete(${s.id})" ${done?'disabled':''}>
+          ${done?'✅ Completed':'✅ Mark section 2.'+s.id+' as completed'}
+        </button>
+        <span class="save-indicator" id="save-ind-${s.id}">✓ Saved to cloud</span>
+      </div>`;
+    secContainer.appendChild(div);
+  });
+  renderProgress();
+}
+
+window.toggleSection = (id) => {
+  const body = document.getElementById(`body-${id}`);
+  const toggle = document.getElementById(`toggle-${id}`);
+  const isOpen = body.classList.contains('open');
+  document.querySelectorAll('.section-body').forEach(b=>b.classList.remove('open'));
+  document.querySelectorAll('.section-toggle').forEach(t=>t.classList.remove('open'));
+  if (!isOpen) { body.classList.add('open'); toggle.classList.add('open'); }
+};
+
+window.markComplete = markComplete;
+
+window.toggleTheme = () => {
+  const h = document.documentElement;
+  h.setAttribute('data-theme', h.getAttribute('data-theme')==='dark'?'light':'dark');
+};
+
+window.copyCode = (btn) => {
+  const text = btn.parentElement.innerText.replace('Copy','').trim();
+  navigator.clipboard.writeText(text).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500);});
+};
+</script>
+</body>
+</html>
