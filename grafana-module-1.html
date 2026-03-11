@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Module 1: Grafana Fundamentals</title>
+<style>
+  :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3350;--accent:#f46800;--accent2:#ff9a3c;--text:#e8eaf0;--text2:#9da3bd;--green:#2ecc71;--blue:#3498db;--purple:#9b59b6;--red:#e74c3c;--radius:12px;}
+  [data-theme="light"]{--bg:#f4f6fb;--surface:#ffffff;--surface2:#eef0f8;--border:#d0d5e8;--text:#1a1d27;--text2:#555b7a;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);}
+  a{color:var(--accent);}
+  .auth-overlay{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;}
+  .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;max-width:380px;width:90%;}
+  .auth-card img{height:38px;margin-bottom:20px;}
+  .auth-card h2{font-size:1.2rem;font-weight:800;margin-bottom:8px;}
+  .auth-card p{color:var(--text2);font-size:0.87rem;margin-bottom:22px;}
+  .google-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:white;color:#333;border:1px solid #ddd;border-radius:8px;padding:11px 20px;font-size:0.9rem;font-weight:600;cursor:pointer;width:100%;transition:all 0.2s;}
+  .google-btn:hover{box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+  .google-btn svg{width:18px;height:18px;flex-shrink:0;}
+  .loading-overlay{position:fixed;inset:0;background:var(--bg);z-index:500;display:none;align-items:center;justify-content:center;}
+  .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:13px 26px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .header-left{display:flex;align-items:center;gap:10px;font-size:0.88rem;color:var(--text2);}
+  .header-left img{height:28px;}
+  .header-left a{color:var(--accent);font-weight:600;}
+  .header-right{display:flex;align-items:center;gap:8px;}
+  .user-chip{display:flex;align-items:center;gap:7px;font-size:0.82rem;}
+  .user-chip img{width:28px;height:28px;border-radius:50%;border:2px solid var(--accent);}
+  .btn-sm{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:7px;cursor:pointer;font-size:0.8rem;transition:all 0.2s;}
+  .btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+  .layout{display:flex;min-height:calc(100vh - 54px);}
+  .sidebar{width:275px;background:var(--surface);border-right:1px solid var(--border);padding:18px 0;overflow-y:auto;position:sticky;top:54px;height:calc(100vh - 54px);flex-shrink:0;}
+  .sidebar-title{padding:0 18px 10px;font-size:0.73rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);border-bottom:1px solid var(--border);margin-bottom:8px;}
+  .sidebar-progress{padding:10px 18px;background:var(--surface2);margin:0 10px 10px;border-radius:8px;}
+  .sidebar-progress-bar{background:var(--border);border-radius:99px;height:4px;margin-top:5px;}
+  .sidebar-progress-fill{height:100%;border-radius:99px;background:var(--accent);transition:width 0.3s;}
+  .nav-item{padding:9px 18px;cursor:pointer;border-left:3px solid transparent;transition:all 0.15s;display:flex;align-items:center;gap:9px;font-size:0.85rem;}
+  .nav-item:hover{background:var(--surface2);}
+  .nav-item.active{border-left-color:var(--accent);background:rgba(244,104,0,0.07);color:var(--accent);font-weight:600;}
+  .nav-item.completed{color:var(--green);}
+  .nav-badge{font-size:0.63rem;padding:2px 6px;border-radius:3px;font-weight:700;}
+  .badge-foundation{background:rgba(46,204,113,0.15);color:var(--green);}
+  .badge-essential{background:rgba(52,152,219,0.15);color:var(--blue);}
+  .badge-important{background:rgba(244,104,0,0.15);color:var(--accent);}
+  .content{flex:1;padding:30px 38px;max-width:840px;}
+  .module-hero{margin-bottom:28px;}
+  .module-hero h1{font-size:1.7rem;font-weight:800;margin-bottom:7px;}
+  .module-hero p{color:var(--text2);font-size:0.97rem;}
+  .module-meta{display:flex;gap:10px;margin-top:10px;}
+  .meta-chip{font-size:0.76rem;padding:4px 10px;border-radius:6px;font-weight:600;}
+  .chip-weight{background:rgba(52,152,219,0.15);color:var(--blue);border:1px solid rgba(52,152,219,0.3);}
+  .chip-sections{background:rgba(46,204,113,0.15);color:var(--green);border:1px solid rgba(46,204,113,0.3);}
+  .section-block{margin-bottom:14px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .section-header{padding:14px 18px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--surface);user-select:none;}
+  .section-header:hover{background:var(--surface2);}
+  .section-num{font-size:0.73rem;font-weight:700;color:var(--text2);min-width:26px;}
+  .section-title{font-weight:600;font-size:0.93rem;flex:1;}
+  .section-toggle{font-size:0.78rem;color:var(--text2);transition:transform 0.2s;}
+  .section-toggle.open{transform:rotate(180deg);}
+  .section-body{padding:22px 26px;background:var(--surface);border-top:1px solid var(--border);display:none;}
+  .section-body.open{display:block;}
+  h3{font-size:0.97rem;font-weight:700;margin:18px 0 9px;}
+  h3:first-child{margin-top:0;}
+  p{font-size:0.88rem;color:var(--text2);line-height:1.7;margin-bottom:11px;}
+  strong{color:var(--text);}
+  ul,ol{padding-left:18px;margin-bottom:11px;}
+  li{font-size:0.86rem;color:var(--text2);line-height:1.7;}
+  pre{background:#0d0f18;border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-size:0.8rem;overflow-x:auto;margin:11px 0;color:#a8d8a8;font-family:'Courier New',monospace;position:relative;}
+  .copy-btn{position:absolute;top:7px;right:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:3px 9px;border-radius:4px;cursor:pointer;font-size:0.7rem;}
+  .copy-btn:hover{background:var(--accent);color:white;}
+  .callout{border-radius:8px;padding:12px 16px;margin:12px 0;font-size:0.85rem;}
+  .callout-warn{background:rgba(231,76,60,0.08);border-left:3px solid var(--red);}
+  .callout-tip{background:rgba(46,204,113,0.08);border-left:3px solid var(--green);}
+  .callout-info{background:rgba(52,152,219,0.08);border-left:3px solid var(--blue);}
+  .callout h4{font-size:0.83rem;font-weight:700;margin-bottom:5px;}
+  .analogy-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;}
+  .analogy-box h4{font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:8px;}
+  .analogy-row{display:flex;align-items:center;gap:9px;font-size:0.83rem;margin-bottom:5px;color:var(--text2);}
+  .analogy-row strong{color:var(--text);min-width:95px;}
+  .diagram{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:18px;margin:12px 0;text-align:center;}
+  .diagram-title{font-size:0.76rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
+  .diagram-row{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:7px;flex-wrap:wrap;}
+  .diagram-box{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:0.8rem;font-weight:600;}
+  .diagram-box.accent{border-color:var(--accent);color:var(--accent);}
+  .test-questions{background:rgba(244,104,0,0.06);border:1px solid rgba(244,104,0,0.2);border-radius:8px;padding:12px 16px;margin-top:16px;}
+  .test-questions h4{font-size:0.8rem;font-weight:700;color:var(--accent);margin-bottom:7px;}
+  .test-questions li{font-size:0.81rem;color:var(--text2);}
+  .video-embed{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:12px 0;display:flex;align-items:center;gap:10px;font-size:0.85rem;}
+  .complete-btn{margin-top:18px;background:var(--accent);color:white;border:none;padding:9px 22px;border-radius:8px;font-size:0.86rem;font-weight:600;cursor:pointer;transition:all 0.2s;}
+  .complete-btn:hover{background:var(--accent2);}
+  .complete-btn.done{background:var(--green);cursor:default;}
+  .nav-footer{display:flex;justify-content:space-between;margin-top:28px;padding-top:22px;border-top:1px solid var(--border);}
+  .nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:9px 18px;border-radius:8px;text-decoration:none;font-size:0.86rem;font-weight:600;transition:all 0.2s;}
+  .nav-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .nav-btn.primary{background:var(--accent);color:white;border-color:var(--accent);}
+  .nav-btn.primary:hover{background:var(--accent2);}
+  .save-indicator{font-size:0.75rem;color:var(--green);margin-left:10px;opacity:0;transition:opacity 0.3s;}
+  .save-indicator.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-card">
+    <img src="https://sflearningdevelopment.github.io/sf-internal-kubernetes-certification/sourcefuse-logo.png" alt="SourceFuse"/>
+    <h2>Sign In Required</h2>
+    <p>Sign in with your SourceFuse Google account to access this module.</p>
+    <button class="google-btn" id="signin-btn">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loading-overlay"><div class="spinner"></div></div>
+
+<div id="app" style="display:none;">
+<header class="header">
+  <div class="header-left">
+    <img src="https://sflearningdevelopment.github.io/sf-internal-kubernetes-certification/sourcefuse-logo.png" alt="SourceFuse"/>
+    <a href="grafana-dashboard.html">← Dashboard</a> / Module 1
+  </div>
+  <div class="header-right">
+    <div class="user-chip"><img id="user-avatar" src="" alt=""/><span id="user-name" style="font-size:0.82rem;"></span></div>
+    <button class="btn-sm" onclick="toggleTheme()">🌓 Theme</button>
+    <button class="btn-sm" id="signout-btn">Sign Out</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-title">Module 1 — 8 Sections</div>
+    <div class="sidebar-progress">
+      <div style="font-size:0.78rem;color:var(--text2);display:flex;justify-content:space-between;"><span>Progress</span><span id="sidebar-pct">0%</span></div>
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="sidebar-bar" style="width:0%"></div></div>
+    </div>
+    <div id="nav-items"></div>
+  </nav>
+  <div class="content">
+    <div class="module-hero">
+      <h1>📊 Module 1: Grafana Fundamentals</h1>
+      <p>Master the Grafana UI, understand core concepts, panels, visualizations, data sources, and how to build dashboards from scratch.</p>
+      <div class="module-meta">
+        <span class="meta-chip chip-weight">25% Certification Weight</span>
+        <span class="meta-chip chip-sections">8 Sections</span>
+      </div>
+    </div>
+    <div id="sections-container"></div>
+    <div class="nav-footer">
+      <a href="grafana-dashboard.html" class="nav-btn">← Dashboard</a>
+      <a href="grafana-module-2.html" class="nav-btn primary">Module 2: Prometheus →</a>
+    </div>
+  </div>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC-I-IOCq2fCwa471fsD5xOn6SYQSBDp7Q",
+  authDomain: "sfcertification-grafana.firebaseapp.com",
+  projectId: "sfcertification-grafana",
+  storageBucket: "sfcertification-grafana.firebasestorage.app",
+  messagingSenderId: "227322696511",
+  appId: "1:227322696511:web:12e7ced7dd3d45fa06798a"
+};
+
+const MODULE_KEY = 'm1';
+const SECTIONS = [
+  {id:1,title:"Introduction to Grafana",badge:"foundation",content:`
+    <h3>📘 What is Grafana?</h3>
+    <p>Grafana is an open-source <strong>analytics and interactive visualization platform</strong>. It connects to a wide range of data sources and helps you understand your data through rich dashboards. Think of it as the <strong>window into your metrics and logs</strong>.</p>
+    <div class="video-embed"><span style="font-size:1.4rem;">▶️</span><span><strong>Watch:</strong> Grafana Introduction & UI Walkthrough (12:30) — Grafana Labs Official</span></div>
+    <h3>🏗️ Core Concepts</h3>
+    <ul>
+      <li><strong>Data Sources:</strong> Connections to metric stores (Prometheus, InfluxDB, MySQL, etc.)</li>
+      <li><strong>Panels:</strong> Individual visualization units (graphs, gauges, tables)</li>
+      <li><strong>Dashboards:</strong> Collections of panels arranged on a canvas</li>
+      <li><strong>Organizations:</strong> Multi-tenant isolation for teams</li>
+      <li><strong>Users & Roles:</strong> Viewer, Editor, Admin access levels</li>
+    </ul>
+    <div class="analogy-box"><h4>🌍 Real-World Analogy</h4>
+      <div class="analogy-row"><strong>Grafana</strong><span>→</span><span>A car's dashboard — shows everything under the hood</span></div>
+      <div class="analogy-row"><strong>Data Source</strong><span>→</span><span>The car's sensors (engine temp, speed, fuel)</span></div>
+      <div class="analogy-row"><strong>Panel</strong><span>→</span><span>Individual gauges on the dashboard</span></div>
+      <div class="analogy-row"><strong>Dashboard</strong><span>→</span><span>The full instrument cluster</span></div>
+    </div>
+    <div class="callout callout-warn"><h4>⚠️ Common Pitfall</h4><p>Grafana does <strong>not store your data</strong> — it only queries and visualizes it. Your data lives in your data source (e.g., Prometheus).</p></div>
+    <div class="test-questions"><h4>🎯 This Section Covers Test Questions:</h4><ul><li>Q1: What is the primary function of Grafana?</li><li>Q2: Does Grafana store metrics data natively?</li></ul></div>`},
+  {id:2,title:"Navigating the Grafana UI",badge:"foundation",content:`
+    <h3>📘 Key UI Areas</h3>
+    <ul>
+      <li><strong>Left Sidebar:</strong> Main navigation — Home, Dashboards, Explore, Alerting, Configuration</li>
+      <li><strong>Top Bar:</strong> Time range picker, refresh controls, share/save buttons</li>
+      <li><strong>Dashboard Canvas:</strong> Main workspace where panels live</li>
+      <li><strong>Panel Editor:</strong> Configure queries, visualization type, and display options</li>
+    </ul>
+    <div class="diagram"><div class="diagram-title">Grafana UI Layout</div>
+      <div class="diagram-row"><div class="diagram-box accent">Left Sidebar<br/><small>Navigation</small></div><span style="color:var(--text2);">+</span><div class="diagram-box accent">Top Bar<br/><small>Time & Controls</small></div></div>
+      <div class="diagram-row" style="margin-top:7px;"><div class="diagram-box" style="width:100%;text-align:center;">Dashboard Canvas — Panels Grid</div></div>
+    </div>
+    <h3>🔍 Explore Mode</h3>
+    <p><strong>Explore</strong> is a query scratchpad — great for ad-hoc metric investigation without modifying dashboards. Use it to test PromQL queries before adding them to a panel.</p>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># Access Explore:
+# Left Sidebar → Explore (compass icon)
+# Select your data source → type your query → Run Query</pre>
+    <div class="callout callout-tip"><h4>💡 Tip</h4><p>Use <strong>Ctrl+K</strong> (Cmd+K on Mac) to open the command palette for quick navigation anywhere in Grafana.</p></div>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q3: What is the Explore mode used for in Grafana?</li><li>Q4: Where do you configure the time range for a dashboard?</li></ul></div>`},
+  {id:3,title:"Data Sources",badge:"essential",content:`
+    <h3>📘 What is a Data Source?</h3>
+    <p>A data source is a <strong>connection configuration</strong> that tells Grafana where and how to fetch data.</p>
+    <h3>🗂️ Common Data Source Types</h3>
+    <ul>
+      <li><strong>Prometheus:</strong> Time-series metrics (most common)</li>
+      <li><strong>Loki:</strong> Log aggregation</li>
+      <li><strong>InfluxDB:</strong> Time-series database</li>
+      <li><strong>MySQL / PostgreSQL:</strong> Relational databases</li>
+      <li><strong>CloudWatch:</strong> AWS metrics</li>
+    </ul>
+    <h3>⚙️ Adding a Data Source</h3>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># Steps to add Prometheus as data source:
+# 1. Left Sidebar → Configuration → Data Sources
+# 2. Click "Add data source"
+# 3. Select "Prometheus"
+# 4. Set URL: http://localhost:9090
+# 5. Click "Save & Test"</pre>
+    <div class="callout callout-info"><h4>ℹ️ Data Source Permissions</h4><p>Only <strong>Admins</strong> can add or edit data sources. Viewers and Editors can only use existing ones.</p></div>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q5: Which data source is most commonly used with Grafana for metrics?</li><li>Q6: What role is required to add a new data source?</li></ul></div>`},
+  {id:4,title:"Panels & Visualizations",badge:"essential",content:`
+    <h3>📘 What is a Panel?</h3>
+    <p>A panel is the <strong>basic building block</strong> of a Grafana dashboard. Each panel displays a query result using a selected visualization type.</p>
+    <h3>📊 Common Visualization Types</h3>
+    <ul>
+      <li><strong>Time Series:</strong> Line/area charts for metrics over time (most common)</li>
+      <li><strong>Gauge:</strong> Single value with threshold indication</li>
+      <li><strong>Stat:</strong> Single large value with trend sparkline</li>
+      <li><strong>Table:</strong> Tabular data view</li>
+      <li><strong>Heatmap:</strong> Distribution over time</li>
+      <li><strong>Logs:</strong> Log stream display (with Loki)</li>
+    </ul>
+    <div class="callout callout-tip"><h4>💡 Tip: Thresholds</h4><p>Set color thresholds on Gauge and Stat panels to visually indicate healthy (green), warning (yellow), and critical (red) states without writing alert rules.</p></div>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q7: Which panel type is best for showing a single metric value with its current health?</li><li>Q8: What does the Transform tab in the panel editor do?</li></ul></div>`},
+  {id:5,title:"Building Your First Dashboard",badge:"essential",content:`
+    <div class="video-embed"><span style="font-size:1.4rem;">▶️</span><span><strong>Watch:</strong> Building Your First Dashboard in Grafana (15:00)</span></div>
+    <h3>📘 Dashboard Creation Workflow</h3>
+    <ol>
+      <li>Click <strong>+ → New Dashboard</strong></li>
+      <li>Click <strong>"Add new panel"</strong></li>
+      <li>Select your data source and write your query</li>
+      <li>Choose a visualization type</li>
+      <li>Configure panel title and options</li>
+      <li>Click <strong>Apply</strong></li>
+      <li>Click <strong>Save Dashboard</strong> (floppy disk icon)</li>
+    </ol>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># Key Dashboard Settings (gear icon → Settings):
+# - Title & Tags: For organization/searching
+# - Time options: Default time range, auto-refresh interval
+# - Variables: Template variables for dynamic dashboards
+# - JSON Model: Raw JSON — useful for version control</pre>
+    <div class="callout callout-warn"><h4>⚠️ Common Pitfall</h4><p>Don't forget to <strong>save</strong> your dashboard after edits! Grafana does not auto-save.</p></div>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q9: How do you save a dashboard in Grafana?</li><li>Q10: Where would you configure a dashboard's default time range?</li></ul></div>`},
+  {id:6,title:"Dashboard Variables & Templating",badge:"important",content:`
+    <h3>📘 What are Dashboard Variables?</h3>
+    <p>Variables allow you to create <strong>dynamic, interactive dashboards</strong> where users can filter data using dropdowns.</p>
+    <h3>🔧 Variable Types</h3>
+    <ul>
+      <li><strong>Query:</strong> Values fetched from a data source query</li>
+      <li><strong>Custom:</strong> Manually defined list of values</li>
+      <li><strong>Constant:</strong> Fixed value</li>
+      <li><strong>Interval:</strong> Time intervals ($__interval)</li>
+    </ul>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># Query variable for Prometheus job labels:
+# Settings → Variables → Add variable
+# Type: Query | Data source: Prometheus
+# Query: label_values(up, job)
+
+# Use variable in panel query:
+rate(http_requests_total{job="$job"}[5m])</pre>
+    <div class="callout callout-tip"><h4>💡 Multi-value variables</h4><p>Enable <strong>"Multi-value"</strong> to allow selecting multiple values simultaneously.</p></div>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q11: What type of variable would you use to get a list of hosts from Prometheus?</li><li>Q12: How do you reference a variable named "env" in a panel query?</li></ul></div>`},
+  {id:7,title:"Dashboard Organization & Folders",badge:"important",content:`
+    <h3>📘 Organizing Dashboards</h3>
+    <ul>
+      <li>Dashboards → Browse → New Folder</li>
+      <li>Folders have their own <strong>permissions</strong> per team/user</li>
+      <li>Use tags for categorization: team, environment, service</li>
+    </ul>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># Best practices for dashboard tags:
+# - Team tags: "platform", "frontend", "database"
+# - Environment tags: "prod", "staging", "dev"
+# - Service tags: "nginx", "postgres", "redis"</pre>
+    <div class="callout callout-info"><h4>ℹ️ Dashboard Provisioning</h4><p>For production, use <strong>Grafana provisioning</strong> to manage dashboards as code (YAML/JSON files in Git).</p></div>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q13: How do you set different permissions for a specific folder?</li><li>Q14: What is Grafana dashboard provisioning?</li></ul></div>`},
+  {id:8,title:"Time Range & Annotations",badge:"important",content:`
+    <h3>📘 Time Range Controls</h3>
+    <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button># Common relative time ranges:
+# now-5m   → Last 5 minutes
+# now-1h   → Last 1 hour
+# now-24h  → Last 24 hours
+# now-7d   → Last 7 days
+# now/d    → Today so far</pre>
+    <h3>📌 Annotations</h3>
+    <p>Annotations are <strong>event markers</strong> displayed as vertical lines on time series graphs. Use them to correlate metric changes with deployments or incidents.</p>
+    <ul>
+      <li><strong>Manual:</strong> Click on a graph → Add annotation</li>
+      <li><strong>Query:</strong> Automatically pull events from a data source</li>
+    </ul>
+    <div class="callout callout-tip"><h4>💡 Tip: Zoom & Sync</h4><p>Click and drag on any time series panel to <strong>zoom into a time range</strong>. Press <strong>Ctrl+Z</strong> to undo.</p></div>
+    <div class="test-questions"><h4>🎯 Test Questions:</h4><ul><li>Q15: What does "now-1h" mean as a time range in Grafana?</li><li>Q16: What are annotations used for in Grafana dashboards?</li></ul></div>`}
+];
+
+const BADGES={foundation:"Foundation",essential:"Essential",important:"Important"};
+const BADGE_CLASSES={foundation:"badge-foundation",essential:"badge-essential",important:"badge-important"};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+let _uid = null;
+let _completed = [];
+
+document.getElementById('signin-btn').onclick = async () => {
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e) {}
+};
+document.getElementById('signout-btn').onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    _uid = user.uid;
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('loading-overlay').style.display = 'flex';
+    document.getElementById('user-avatar').src = user.photoURL || '';
+    document.getElementById('user-name').textContent = user.displayName || '';
+    await loadCompleted();
+    document.getElementById('loading-overlay').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    renderAll();
+  } else {
+    _uid = null;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('auth-overlay').style.display = 'flex';
+  }
+});
+
+async function loadCompleted() {
+  const snap = await getDoc(doc(db,'progress',_uid));
+  _completed = snap.exists() ? (snap.data()[MODULE_KEY] || []) : [];
+}
+
+async function markComplete(id) {
+  if (_completed.includes(id)) return;
+  _completed = [..._completed, id];
+  const ref = doc(db,'progress',_uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    await setDoc(ref, {[MODULE_KEY]: _completed, updatedAt: serverTimestamp()});
+  } else {
+    await updateDoc(ref, {[MODULE_KEY]: arrayUnion(id), updatedAt: serverTimestamp()});
+  }
+  const btn = document.getElementById(`complete-btn-${id}`);
+  if (btn) { btn.textContent = '✅ Completed'; btn.classList.add('done'); btn.disabled = true; }
+  renderProgress();
+  renderNavItem(id, true);
+  showSaveIndicator(id);
+}
+
+function showSaveIndicator(id) {
+  const ind = document.getElementById(`save-ind-${id}`);
+  if (ind) { ind.classList.add('show'); setTimeout(()=>ind.classList.remove('show'),2000); }
+}
+
+function renderProgress() {
+  const pct = Math.round((_completed.length / SECTIONS.length)*100);
+  document.getElementById('sidebar-pct').textContent = pct+'%';
+  document.getElementById('sidebar-bar').style.width = pct+'%';
+}
+
+function renderNavItem(id, done) {
+  const el = document.getElementById(`nav-${id}`);
+  if (!el) return;
+  el.className = 'nav-item' + (done ? ' completed' : '');
+  el.innerHTML = `<span>${id}.</span><span style="flex:1;font-size:0.83rem">${SECTIONS[id-1].title}</span><span class="nav-badge ${BADGE_CLASSES[SECTIONS[id-1].badge]}">${BADGES[SECTIONS[id-1].badge]}</span>${done?'<span style="font-size:0.72rem">✅</span>':''}`;
+  el.onclick = () => toggleSection(id);
+}
+
+function renderAll() {
+  const navContainer = document.getElementById('nav-items');
+  navContainer.innerHTML = '';
+  SECTIONS.forEach(s => {
+    const div = document.createElement('div');
+    div.id = `nav-${s.id}`;
+    navContainer.appendChild(div);
+    renderNavItem(s.id, _completed.includes(s.id));
+  });
+
+  const secContainer = document.getElementById('sections-container');
+  secContainer.innerHTML = '';
+  SECTIONS.forEach(s => {
+    const done = _completed.includes(s.id);
+    const div = document.createElement('div');
+    div.className = 'section-block';
+    div.innerHTML = `
+      <div class="section-header" onclick="toggleSection(${s.id})">
+        <span class="section-num">1.${s.id}</span>
+        <span class="section-title">${s.title}</span>
+        <span class="nav-badge ${BADGE_CLASSES[s.badge]}">${BADGES[s.badge]}</span>
+        ${done?'<span style="color:var(--green);font-size:0.83rem;">✅</span>':''}
+        <span class="section-toggle" id="toggle-${s.id}">▼</span>
+      </div>
+      <div class="section-body" id="body-${s.id}">
+        ${s.content}
+        <button class="complete-btn ${done?'done':''}" id="complete-btn-${s.id}" onclick="markComplete(${s.id})" ${done?'disabled':''}>
+          ${done?'✅ Completed':'✅ Mark section 1.'+s.id+' as completed'}
+        </button>
+        <span class="save-indicator" id="save-ind-${s.id}">✓ Saved to cloud</span>
+      </div>`;
+    secContainer.appendChild(div);
+  });
+  renderProgress();
+}
+
+window.toggleSection = (id) => {
+  const body = document.getElementById(`body-${id}`);
+  const toggle = document.getElementById(`toggle-${id}`);
+  const isOpen = body.classList.contains('open');
+  document.querySelectorAll('.section-body').forEach(b=>b.classList.remove('open'));
+  document.querySelectorAll('.section-toggle').forEach(t=>t.classList.remove('open'));
+  if (!isOpen) { body.classList.add('open'); toggle.classList.add('open'); }
+};
+
+window.markComplete = markComplete;
+
+window.toggleTheme = () => {
+  const h = document.documentElement;
+  h.setAttribute('data-theme', h.getAttribute('data-theme')==='dark'?'light':'dark');
+};
+
+window.copyCode = (btn) => {
+  const text = btn.parentElement.innerText.replace('Copy','').trim();
+  navigator.clipboard.writeText(text).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500);});
+};
+</script>
+</body>
+</html>
