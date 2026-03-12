@@ -95,16 +95,6 @@
   .video-item:last-child{border-bottom:none;}
   .video-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;}
 
-  .eval-card{background:linear-gradient(135deg,rgba(244,104,0,0.1),rgba(255,154,60,0.04));border:1px solid rgba(244,104,0,0.28);border-radius:var(--radius);padding:26px 30px;text-align:center;margin-top:8px;}
-  .eval-card h3{font-size:1.08rem;margin-bottom:7px;}
-  .eval-card p{color:var(--text2);font-size:0.86rem;margin-bottom:6px;}
-  .eval-btn{background:var(--accent);color:white;padding:11px 30px;border-radius:8px;font-weight:700;font-size:0.93rem;border:none;cursor:pointer;transition:all 0.2s;text-decoration:none;display:inline-block;opacity:0.45;pointer-events:none;}
-  .eval-btn.unlocked{opacity:1;pointer-events:auto;}
-  .eval-btn:hover{background:var(--accent2);}
-  .score-chip{display:inline-block;margin:6px 0;padding:4px 12px;border-radius:6px;font-size:0.8rem;font-weight:700;}
-  .score-pass{background:rgba(46,204,113,0.15);color:var(--green);border:1px solid rgba(46,204,113,0.3);}
-  .score-fail{background:rgba(231,76,60,0.15);color:var(--red);border:1px solid rgba(231,76,60,0.3);}
-
   .disclaimer{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 26px;margin-top:26px;}
   .disclaimer-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
   @media(max-width:600px){.disclaimer-grid{grid-template-columns:1fr;}}
@@ -147,7 +137,7 @@
         </div>
         <img class="user-avatar" id="user-avatar" src="" alt=""/>
       </div>
-      <button class="btn-sm admin-btn" id="admin-btn" style="display:none;" onclick="window.location.href='grafana-admin.html'">🛡 Admin</button>
+      <button class="btn-sm admin-btn" id="admin-btn" style="display:none;" onclick="window.open('https://sflearningdevelopment.github.io/sf-knowledge-hub/index.html','_blank')">🛡 Admin</button>
       <button class="btn-sm" onclick="toggleTheme()">🌓 Theme</button>
       <button class="btn-sm" id="signout-btn">Sign Out</button>
     </div>
@@ -197,7 +187,6 @@
           <li><span>✅</span><span>PromQL examples and dashboard templates</span></li>
           <li><span>✅</span><span>Video tutorials from Grafana educators</span></li>
           <li><span>✅</span><span>Per-user progress tracked in the cloud</span></li>
-          <li><span>✅</span><span>Final evaluation test — max 3 attempts</span></li>
         </ul>
       </div>
       <div class="card">
@@ -205,7 +194,7 @@
         <div class="week-item"><span class="week-badge">Week 1</span><span class="week-text"><strong>Module 1:</strong> Grafana Fundamentals</span></div>
         <div class="week-item"><span class="week-badge">Week 2</span><span class="week-text"><strong>Module 2:</strong> Prometheus Integration</span></div>
         <div class="week-item"><span class="week-badge">Week 3</span><span class="week-text"><strong>Module 3:</strong> Alerting & Notifications</span></div>
-        <div class="week-item"><span class="week-badge">Week 4</span><span class="week-text"><strong>Module 4:</strong> Plugins + Review + Evaluation Test</span></div>
+        <div class="week-item"><span class="week-badge">Week 4</span><span class="week-text"><strong>Module 4:</strong> Plugins & Extensions + Review</span></div>
       </div>
     </div>
 
@@ -253,15 +242,6 @@
       <div class="module-desc">Explore Grafana's plugin ecosystem — install and configure panel, data source, and app plugins.</div>
       <div class="module-progress-bar"><div class="module-progress-fill" id="m4-bar" style="width:0%"></div></div>
       <div class="module-footer"><span class="module-progress-text" id="m4-text">0 / 6 sections completed • 0%</span><a href="grafana-module-4.html" class="start-btn">Start Learning →</a></div>
-    </div>
-
-    <div class="eval-card">
-      <h3>🎓 Final Evaluation Test</h3>
-      <p>Complete all 4 modules to unlock. MCQ + scenario-based questions. Max 3 attempts.</p>
-      <div id="eval-score-display"></div>
-      <p style="font-size:0.79rem;color:var(--text2);" id="attempts-label">⏳ Unlock by completing all 32 sections</p>
-      <br/>
-      <a href="grafana-evaluation.html" class="eval-btn" id="eval-btn">🎯 Take Evaluation Test</a>
     </div>
 
     <div class="disclaimer">
@@ -379,31 +359,6 @@ async function loadProgress(user) {
   document.getElementById('stat-rem').textContent = TOTAL-totalDone;
   document.getElementById('progress-arc').style.strokeDashoffset = 264-(264*overall/100);
   document.getElementById('resume-btn').textContent = totalDone > 0 ? '📖 Resume Learning' : '📖 Start Learning';
-
-  // Eval test status
-  const resSnap = await getDoc(doc(db,'results',user.uid));
-  const results = resSnap.exists() ? resSnap.data() : null;
-  const attLabel = document.getElementById('attempts-label');
-  const scoreDisplay = document.getElementById('eval-score-display');
-
-  if (totalDone >= TOTAL) {
-    const attemptCount = results?.attemptCount || 0;
-    const remaining = 3 - attemptCount;
-    if (results) {
-      const cls = results.bestPassed ? 'score-pass' : 'score-fail';
-      const status = results.bestPassed ? '✅ Passed' : '❌ Not Passed';
-      scoreDisplay.innerHTML = `<span class="score-chip ${cls}">Best Score: ${results.bestScore}% — ${status}</span>`;
-    }
-    if (remaining <= 0) {
-      attLabel.textContent = '⚠️ You have used all 3 attempts.';
-      document.getElementById('eval-btn').textContent = '🔒 No Attempts Remaining';
-    } else {
-      document.getElementById('eval-btn').classList.add('unlocked');
-      attLabel.textContent = `${attemptCount}/3 attempts used • ${remaining} remaining`;
-    }
-  } else {
-    attLabel.textContent = `⏳ Complete all 32 sections to unlock — ${TOTAL-totalDone} remaining`;
-  }
 }
 
 window.resumeLearning = () => {
@@ -412,7 +367,7 @@ window.resumeLearning = () => {
       window.location.href = `grafana-module-${m}.html`; return;
     }
   }
-  window.location.href = 'grafana-evaluation.html';
+  // All modules complete — stay on dashboard
 };
 
 window.toggleTheme = () => {
