@@ -28,19 +28,17 @@
   .header-right{display:flex;align-items:center;gap:8px;}
   .user-chip{display:flex;align-items:center;gap:7px;font-size:0.82rem;}
   .user-chip img{width:28px;height:28px;border-radius:50%;border:2px solid var(--accent);}
-  .btn-sm{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:7px;cursor:pointer;font-size:0.8rem;transition:all 0.2s;}
+  .btn-sm{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:7px;cursor:pointer;font-size:0.8rem;transition:all 0.2s;text-decoration:none;display:inline-block;}
   .btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-dashboard{background:rgba(52,152,219,0.1);border:1px solid rgba(52,152,219,0.3);color:var(--blue);padding:6px 12px;border-radius:7px;cursor:pointer;font-size:0.8rem;font-weight:600;transition:all 0.2s;text-decoration:none;display:inline-block;}
+  .btn-dashboard:hover{background:var(--blue);color:white;border-color:var(--blue);}
   .admin-badge{background:var(--accent);color:white;font-size:0.62rem;font-weight:700;padding:2px 7px;border-radius:4px;}
   .main{max-width:1200px;margin:0 auto;padding:28px 22px;}
-
-  /* STATS ROW */
   .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
   @media(max-width:768px){.stats-row{grid-template-columns:repeat(2,1fr);}}
   .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;}
   .stat-card .num{font-size:2rem;font-weight:800;color:var(--accent);}
   .stat-card .lbl{font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;}
-
-  /* FILTERS */
   .filters{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
   .filters input{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:8px;font-size:0.85rem;outline:none;flex:1;min-width:180px;}
   .filters input:focus{border-color:var(--accent);}
@@ -48,8 +46,6 @@
   .filter-btn:hover,.filter-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
   .export-btn{background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.3);color:var(--green);padding:7px 16px;border-radius:7px;cursor:pointer;font-size:0.82rem;font-weight:600;margin-left:auto;transition:all 0.2s;}
   .export-btn:hover{background:var(--green);color:white;}
-
-  /* TABLE */
   .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
   table{width:100%;border-collapse:collapse;}
   thead{background:var(--surface2);}
@@ -61,19 +57,14 @@
   .user-cell img{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);}
   .user-cell-info .name{font-weight:600;font-size:0.85rem;}
   .user-cell-info .email{font-size:0.75rem;color:var(--text2);}
-
   .prog-bar-wrap{background:var(--surface2);border-radius:99px;height:5px;width:90px;display:inline-block;vertical-align:middle;}
   .prog-bar-fill{height:100%;border-radius:99px;background:var(--accent);}
   .pct-label{font-size:0.78rem;color:var(--text2);margin-left:6px;}
-
   .badge-pass{background:rgba(46,204,113,0.15);color:var(--green);border:1px solid rgba(46,204,113,0.3);font-size:0.72rem;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap;}
   .badge-fail{background:rgba(231,76,60,0.15);color:var(--red);border:1px solid rgba(231,76,60,0.3);font-size:0.72rem;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap;}
   .badge-notaken{background:var(--surface2);color:var(--text2);border:1px solid var(--border);font-size:0.72rem;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap;}
-
   .expand-btn{background:none;border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:5px;cursor:pointer;font-size:0.75rem;transition:all 0.15s;}
   .expand-btn:hover{border-color:var(--accent);color:var(--accent);}
-
-  /* DRILL DOWN */
   .drilldown-row{display:none;background:var(--surface2);}
   .drilldown-row.open{display:table-row;}
   .drilldown-content{padding:14px 18px;}
@@ -85,7 +76,6 @@
   .attempt-list h4{font-size:0.78rem;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;}
   .attempt-item{display:flex;justify-content:space-between;font-size:0.8rem;padding:4px 0;border-bottom:1px solid var(--border);}
   .attempt-item:last-child{border-bottom:none;}
-
   .empty-state{text-align:center;padding:48px;color:var(--text2);}
   .refresh-btn{background:rgba(52,152,219,0.1);border:1px solid rgba(52,152,219,0.3);color:var(--blue);padding:7px 16px;border-radius:7px;cursor:pointer;font-size:0.82rem;font-weight:600;transition:all 0.2s;}
   .refresh-btn:hover{background:var(--blue);color:white;}
@@ -121,8 +111,8 @@
     <div class="user-chip"><img id="user-avatar" src="" alt=""/><span id="user-name"></span><span class="admin-badge">ADMIN</span></div>
     <button class="btn-sm refresh-btn" onclick="loadData()">🔄 Refresh</button>
     <button class="btn-sm" onclick="toggleTheme()">🌓 Theme</button>
-    <a href="grafana-dashboard.html"><button class="btn-sm">← Course</button></a>
-    <button class="btn-sm" id="signout-btn">Sign Out</button>
+    <a href="grafana-dashboard.html" class="btn-sm">← Course</a>
+    <a href="https://sflearningdevelopment.github.io/sf-knowledge-hub/index.html" class="btn-dashboard">⌂ Admin Dashboard</a>
   </div>
 </header>
 
@@ -147,13 +137,9 @@
     <table>
       <thead>
         <tr>
-          <th>Learner</th>
-          <th>Progress</th>
+          <th>Learner</th><th>Progress</th>
           <th>M1</th><th>M2</th><th>M3</th><th>M4</th>
-          <th>Best Score</th>
-          <th>Attempts</th>
-          <th>Last Active</th>
-          <th></th>
+          <th>Best Score</th><th>Attempts</th><th>Last Active</th><th></th>
         </tr>
       </thead>
       <tbody id="table-body"></tbody>
@@ -195,11 +181,8 @@ document.getElementById('signin-btn').onclick = async () => {
       await signOut(auth);
       document.getElementById('auth-error').style.display = 'block';
     }
-  } catch(e) {
-    document.getElementById('auth-error').style.display = 'block';
-  }
+  } catch(e) { document.getElementById('auth-error').style.display = 'block'; }
 };
-document.getElementById('signout-btn').onclick = () => signOut(auth);
 
 onAuthStateChanged(auth, async user => {
   if (user && ADMIN_EMAILS.includes(user.email)) {
@@ -222,21 +205,16 @@ onAuthStateChanged(auth, async user => {
 window.loadData = async () => {
   document.getElementById('loading-overlay').style.display = 'flex';
   try {
-    const usersSnap = await getDocs(collection(db,'users'));
+    const usersSnap    = await getDocs(collection(db,'users'));
     const progressSnap = await getDocs(collection(db,'progress'));
-    const resultsSnap = await getDocs(collection(db,'results'));
-
-    const progressMap = {};
-    progressSnap.forEach(d => progressMap[d.id] = d.data());
-    const resultsMap = {};
-    resultsSnap.forEach(d => resultsMap[d.id] = d.data());
-
+    const resultsSnap  = await getDocs(collection(db,'results'));
+    const progressMap = {}; progressSnap.forEach(d => progressMap[d.id] = d.data());
+    const resultsMap  = {}; resultsSnap.forEach(d => resultsMap[d.id] = d.data());
     _allData = [];
     usersSnap.forEach(d => {
-      const u = d.data();
-      const uid = d.id;
+      const u = d.data(); const uid = d.id;
       const prog = progressMap[uid] || {};
-      const res = resultsMap[uid] || null;
+      const res  = resultsMap[uid]  || null;
       let totalDone = 0;
       const modProgress = {};
       for (const [key, tot] of Object.entries(MODULE_TOTALS)) {
@@ -251,24 +229,19 @@ window.loadData = async () => {
         attempts:res?.attempts||[]
       });
     });
-    _allData.sort((a,b) => (b.totalDone - a.totalDone));
-    updateStats();
-    applyFilters();
-  } finally {
-    document.getElementById('loading-overlay').style.display = 'none';
-  }
+    _allData.sort((a,b) => b.totalDone - a.totalDone);
+    updateStats(); applyFilters();
+  } finally { document.getElementById('loading-overlay').style.display = 'none'; }
 };
 
 function updateStats() {
-  const total = _allData.length;
   const passed = _allData.filter(u=>u.bestPassed).length;
   const withScore = _allData.filter(u=>u.bestScore!==undefined);
   const avg = withScore.length > 0 ? Math.round(withScore.reduce((s,u)=>s+u.bestScore,0)/withScore.length) : 0;
-  const completed = _allData.filter(u=>u.totalDone>=TOTAL_SECTIONS).length;
-  document.getElementById('stat-total').textContent = total;
-  document.getElementById('stat-passed').textContent = passed;
-  document.getElementById('stat-avg').textContent = withScore.length > 0 ? avg+'%' : '—';
-  document.getElementById('stat-completed').textContent = completed;
+  document.getElementById('stat-total').textContent     = _allData.length;
+  document.getElementById('stat-passed').textContent    = passed;
+  document.getElementById('stat-avg').textContent       = withScore.length > 0 ? avg+'%' : '—';
+  document.getElementById('stat-completed').textContent = _allData.filter(u=>u.totalDone>=TOTAL_SECTIONS).length;
 }
 
 window.setFilter = (f) => {
@@ -281,11 +254,11 @@ window.setFilter = (f) => {
 
 window.applyFilters = () => {
   const search = document.getElementById('search-input').value.toLowerCase();
-  let filtered = _allData.filter(u => {
+  const filtered = _allData.filter(u => {
     const matchSearch = !search || u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search);
     let matchFilter = true;
-    if (_filter==='passed') matchFilter = u.bestPassed===true;
-    else if (_filter==='failed') matchFilter = u.bestPassed===false;
+    if (_filter==='passed')  matchFilter = u.bestPassed===true;
+    else if (_filter==='failed')  matchFilter = u.bestPassed===false;
     else if (_filter==='notaken') matchFilter = u.attemptCount===0;
     return matchSearch && matchFilter;
   });
@@ -295,26 +268,22 @@ window.applyFilters = () => {
 function renderTable(data) {
   const tbody = document.getElementById('table-body');
   tbody.innerHTML = '';
-  document.getElementById('empty-state').style.display = data.length===0?'block':'none';
-  if (data.length===0) return;
-
+  document.getElementById('empty-state').style.display = data.length===0 ? 'block' : 'none';
+  if (!data.length) return;
   data.forEach((u,i) => {
     const overallPct = Math.round((u.totalDone/TOTAL_SECTIONS)*100);
-    const lastSeen = u.lastSeen?.seconds ? new Date(u.lastSeen.seconds*1000).toLocaleDateString() : '—';
+    const lastSeen   = u.lastSeen?.seconds ? new Date(u.lastSeen.seconds*1000).toLocaleDateString() : '—';
     const scoreBadge = u.bestScore!==undefined
       ? `<span class="${u.bestPassed?'badge-pass':'badge-fail'}">${u.bestScore}% ${u.bestPassed?'✅ Pass':'❌ Fail'}</span>`
-      : `<span class="badge-notaken">Not Taken</span>`;
-
+      : '<span class="badge-notaken">Not Taken</span>';
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><div class="user-cell">
-        <img src="${u.photoURL||''}" onerror="this.style.display='none'" alt=""/>
+        <img src="${u.photoURL}" onerror="this.style.display='none'" alt=""/>
         <div class="user-cell-info"><div class="name">${u.name}</div><div class="email">${u.email}</div></div>
       </div></td>
-      <td>
-        <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${overallPct}%"></div></div>
-        <span class="pct-label">${u.totalDone}/${TOTAL_SECTIONS} (${overallPct}%)</span>
-      </td>
+      <td><div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:${overallPct}%"></div></div>
+          <span class="pct-label">${u.totalDone}/${TOTAL_SECTIONS} (${overallPct}%)</span></td>
       <td><span style="font-size:0.8rem;color:${u.modProgress.m1.pct>=100?'var(--green)':'var(--text2)'}">${u.modProgress.m1.done}/${u.modProgress.m1.total}</span></td>
       <td><span style="font-size:0.8rem;color:${u.modProgress.m2.pct>=100?'var(--green)':'var(--text2)'}">${u.modProgress.m2.done}/${u.modProgress.m2.total}</span></td>
       <td><span style="font-size:0.8rem;color:${u.modProgress.m3.pct>=100?'var(--green)':'var(--text2)'}">${u.modProgress.m3.done}/${u.modProgress.m3.total}</span></td>
@@ -324,30 +293,24 @@ function renderTable(data) {
       <td style="font-size:0.8rem;color:var(--text2);">${lastSeen}</td>
       <td><button class="expand-btn" id="expand-${i}" onclick="toggleDrilldown(${i})">Details</button></td>`;
     tbody.appendChild(tr);
-
-    // Drilldown row
     const modNames = ['Fundamentals','Prometheus','Alerting','Plugins'];
-    const modKeys = ['m1','m2','m3','m4'];
+    const modKeys  = ['m1','m2','m3','m4'];
     const modGridHTML = modKeys.map((k,mi) => {
-      const mp = u.modProgress[k];
-      const mbp = u.moduleBreakdown?.[k];
+      const mp = u.modProgress[k]; const mbp = u.moduleBreakdown?.[k];
       return `<div class="drilldown-mod">
         <div class="mod-name">M${mi+1}: ${modNames[mi]}</div>
         <div style="font-size:0.85rem;font-weight:700;color:${mp.pct>=100?'var(--green)':'var(--accent)'}">Sections: ${mp.done}/${mp.total}</div>
         ${mbp?`<div style="font-size:0.8rem;color:var(--text2);margin-top:4px;">Test: ${mbp.correct}/${mbp.total} (${mbp.pct}%)</div>`:''}
       </div>`;
     }).join('');
-
     const attemptsHTML = u.attempts.length > 0
       ? u.attempts.map((a,ai) => {
           const d = a.date?.seconds ? new Date(a.date.seconds*1000).toLocaleDateString() : 'N/A';
           return `<div class="attempt-item"><span>Attempt ${ai+1} — ${d}</span><span style="font-weight:700;color:${a.passed?'var(--green)':'var(--red)'}">${a.score}% ${a.passed?'✅':'❌'}</span></div>`;
         }).join('')
       : '<div style="font-size:0.8rem;color:var(--text2);">No attempts yet</div>';
-
     const dtr = document.createElement('tr');
-    dtr.className = 'drilldown-row';
-    dtr.id = `drilldown-${i}`;
+    dtr.className = 'drilldown-row'; dtr.id = `drilldown-${i}`;
     dtr.innerHTML = `<td colspan="10"><div class="drilldown-content">
       <div style="font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">Module Progress</div>
       <div class="drilldown-grid">${modGridHTML}</div>
@@ -366,27 +329,26 @@ window.toggleDrilldown = (i) => {
 };
 
 window.exportCSV = () => {
-  const headers = ['Name','Email','Total Done','M1 Done','M2 Done','M3 Done','M4 Done','Best Score','Passed','Attempts','Last Seen'];
+  const headers = ['Name','Email','Total Done','M1','M2','M3','M4','Best Score','Passed','Attempts','Last Seen'];
   const rows = _allData.map(u => [
     u.name, u.email, u.totalDone,
-    u.modProgress.m1.done, u.modProgress.m2.done,
-    u.modProgress.m3.done, u.modProgress.m4.done,
+    u.modProgress.m1.done, u.modProgress.m2.done, u.modProgress.m3.done, u.modProgress.m4.done,
     u.bestScore!==undefined?u.bestScore+'%':'N/A',
     u.bestPassed!==undefined?(u.bestPassed?'Yes':'No'):'N/A',
     u.attemptCount,
     u.lastSeen?.seconds ? new Date(u.lastSeen.seconds*1000).toLocaleDateString() : 'N/A'
   ]);
-  const csv = [headers, ...rows].map(r => r.map(v=>`"${v}"`).join(',')).join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const csv = [headers,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
   a.href=url; a.download=`grafana-essentials-report-${new Date().toISOString().split('T')[0]}.csv`;
   a.click(); URL.revokeObjectURL(url);
 };
 
 window.toggleTheme = () => {
-  const h=document.documentElement;
-  h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');
+  const h = document.documentElement;
+  h.setAttribute('data-theme', h.getAttribute('data-theme')=='dark'?'light':'dark');
 };
 </script>
 </body>
