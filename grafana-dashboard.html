@@ -262,7 +262,7 @@ footer{background:var(--white);border-top:1px solid var(--border);padding:36px 3
             <div class="mod-bar-track"><div class="mod-bar-fill" id="m1-bar" style="width:0%"></div></div>
             <div class="mod-desc">Grafana UI, panels, data sources &amp; dashboards.</div>
             <div class="mod-actions">
-              <a href="grafana-module-1.html" class="btn-learn">Start Learning &rarr;</a>
+              <a href="grafana-module-1.html?v=1779955463258" class="btn-learn">Start Learning &rarr;</a>
               <button class="btn-quiz" id="m1-quiz" disabled>Quiz (0/8)</button>
             </div>
           </div>
@@ -280,7 +280,7 @@ footer{background:var(--white);border-top:1px solid var(--border);padding:36px 3
             <div class="mod-bar-track"><div class="mod-bar-fill" id="m2-bar" style="width:0%"></div></div>
             <div class="mod-desc">PromQL queries, metrics &amp; scrape configs.</div>
             <div class="mod-actions">
-              <a href="grafana-module-2.html" class="btn-learn">Start Learning &rarr;</a>
+              <a href="grafana-module-2.html?v=1779955463258" class="btn-learn">Start Learning &rarr;</a>
               <button class="btn-quiz" id="m2-quiz" disabled>Quiz (0/10)</button>
             </div>
           </div>
@@ -298,7 +298,7 @@ footer{background:var(--white);border-top:1px solid var(--border);padding:36px 3
             <div class="mod-bar-track"><div class="mod-bar-fill" id="m3-bar" style="width:0%"></div></div>
             <div class="mod-desc">Alert rules, contact points &amp; notification policies.</div>
             <div class="mod-actions">
-              <a href="grafana-module-3.html" class="btn-learn">Start Learning &rarr;</a>
+              <a href="grafana-module-3.html?v=1779955463258" class="btn-learn">Start Learning &rarr;</a>
               <button class="btn-quiz" id="m3-quiz" disabled>Quiz (0/8)</button>
             </div>
           </div>
@@ -316,7 +316,7 @@ footer{background:var(--white);border-top:1px solid var(--border);padding:36px 3
             <div class="mod-bar-track"><div class="mod-bar-fill" id="m4-bar" style="width:0%"></div></div>
             <div class="mod-desc">Plugin ecosystem &mdash; panel, data source &amp; app plugins.</div>
             <div class="mod-actions">
-              <a href="grafana-module-4.html" class="btn-learn">Start Learning &rarr;</a>
+              <a href="grafana-module-4.html?v=1779955463258" class="btn-learn">Start Learning &rarr;</a>
               <button class="btn-quiz" id="m4-quiz" disabled>Quiz (0/6)</button>
             </div>
           </div>
@@ -415,7 +415,7 @@ async function loadProgress(user) {
       if (done >= tot) {
         qBtn.disabled = false;
         qBtn.textContent = "Quiz ("+done+"/"+tot+") - Unlocked";
-        qBtn.onclick = () => { window.location.href = "grafana-evaluation.html?module="+m; };
+        qBtn.onclick = () => { window.location.href = "grafana-evaluation.html?module="+m+"&v=1779955463258"; };
       } else {
         qBtn.textContent = "Quiz ("+done+"/"+tot+")";
       }
@@ -438,7 +438,7 @@ async function loadProgress(user) {
 window.resumeLearning = () => {
   for (let m=1; m<=4; m++) {
     if ((_progress["m"+m]||[]).length < MODULE_TOTALS[m-1]) {
-      window.location.href = "grafana-module-"+m+".html";
+      window.location.href = "grafana-module-"+m+".html?v=1779955463258";
       return;
     }
   }
