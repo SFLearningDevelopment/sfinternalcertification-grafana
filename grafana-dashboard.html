@@ -369,6 +369,12 @@ document.getElementById("signout-btn").onclick = () => signOut(auth);
 
 onAuthStateChanged(auth, async user => {
   if (user) {
+    if (!user.email || !user.email.endsWith('@sourcefuse.com')) {
+      document.getElementById("auth-error").textContent = 'Only @sourcefuse.com accounts are allowed.';
+      document.getElementById("auth-error").style.display = 'block';
+      await signOut(auth);
+      return;
+    }
     document.getElementById("auth-overlay").style.display = "none";
     document.getElementById("loading-overlay").style.display = "flex";
     await loadProgress(user);
