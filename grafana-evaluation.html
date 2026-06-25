@@ -409,6 +409,34 @@ window.submitTest = async () => {
     attempts:arrayUnion(attempt),
     updatedAt:serverTimestamp()
   },{merge:true});
+
+  // ---- Parallel write to courseExamResults (admin Exam Results reader) ----
+  // Path: courseExamResults/{email}/courses/{CP_COURSE_ID}/attempts/{id}
+  try {
+    const CP_COURSE_ID = 'IK2EGroiFrD17ZUB5Kaw';
+    const email = _user && _user.email ? _user.email.toLowerCase().trim() : null;
+    if (email) {
+      const attemptId = 'att-' + Date.now();
+      const cerRec = {
+        email,
+        name: (_user.displayName || _user.email),
+        courseId: CP_COURSE_ID,
+        attemptNumber: newCount,
+        correct: correct,
+        total: ALL_QUESTIONS.length,
+        pct: (score / 100),
+        pass: !!passed,
+        submittedAt: new Date().toISOString(),
+        durationSeconds: (typeof timeTaken === 'number') ? timeTaken : null,
+        timeUp: false,
+        moduleBreakdown,
+        questions: []
+      };
+      const cerRef = doc(db, 'courseExamResults', email, 'courses', CP_COURSE_ID, 'attempts', attemptId);
+      await setDoc(cerRef, cerRec, { merge:true });
+    }
+  } catch(e) { console.warn('[grafana] courseExamResults write failed (non-fatal):', e.message); }
+
   _existingResults={...(existing||{}),attemptCount:newCount,bestScore:newBest,bestPassed:newBestPassed,attempts:[...prevAttempts,{score,passed,date:new Date()}]};
   renderSection();
 };
